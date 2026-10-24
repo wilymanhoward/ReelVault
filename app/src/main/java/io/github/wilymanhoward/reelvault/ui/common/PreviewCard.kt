@@ -178,9 +178,9 @@ fun Thumbnail(
                 contentScale = ContentScale.Crop,
                 // Some thumbnails carry bars baked in: YouTube's hqdefault.jpg is 4:3 with black bars above and
                 // below, and TikTok's "share card" is a wide 1200x630 image with the portrait video in the middle
-                // and blurred edges. In a 3:4 frame a 1.34x zoom crops both to the video itself.
+                // and blurred edges. The zoom crops both to the video itself, in 3:4 cards and the wider detail hero.
                 modifier = Modifier.fillMaxSize().then(
-                    if (item.hasBakedInBars()) Modifier.graphicsLayer { scaleX = 1.34f; scaleY = 1.34f } else Modifier,
+                    item.barZoom()?.let { zoom -> Modifier.graphicsLayer { scaleX = zoom; scaleY = zoom } } ?: Modifier,
                 ),
                 onSuccess = { state = ImageState.SHOWN },
                 onError = { error ->
@@ -257,8 +257,13 @@ fun SavedItem.headline(): String = title ?: caption ?: authorName ?: displayUrl(
 fun SavedItem.metaLine(): String =
     listOfNotNull(platform.displayName, authorName.takeUnless { title == null && caption == null }).joinToString(" · ")
 
-private fun SavedItem.hasBakedInBars() =
-    platform == Platform.YOUTUBE || (platform == Platform.TIKTOK && thumbnailUrl?.contains("video-share-card") == true)
+/** How far to zoom a thumbnail to crop bars baked into it, or null when it has none. */
+private fun SavedItem.barZoom(): Float? = when {
+    platform == Platform.YOUTUBE -> 1.34f
+    // The share card's video is narrower than a YouTube frame, and the detail hero is wider than a card.
+    platform == Platform.TIKTOK && thumbnailUrl?.contains("video-share-card") == true -> 1.45f
+    else -> null
+}
 
 /** "tiktok.com/@a/video/1" instead of the full URL. */
 fun displayUrl(url: String): String = url.toHttpUrlOrNull()?.let { it.host.removePrefix("www.") + it.encodedPath } ?: url

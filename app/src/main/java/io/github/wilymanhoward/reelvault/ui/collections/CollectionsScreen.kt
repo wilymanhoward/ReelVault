@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -188,7 +189,10 @@ fun CollectionCover(collection: VaultCollection, modifier: Modifier = Modifier) 
                 model = if (image.startsWith("/")) File(image) else image,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
+                // Same crop as the cards: zoom past bars baked into YouTube and TikTok share-card images.
+                modifier = Modifier.fillMaxSize().then(
+                    if (collection.coverHasBars) Modifier.graphicsLayer { scaleX = 1.34f; scaleY = 1.34f } else Modifier,
+                ),
             )
         }
     }

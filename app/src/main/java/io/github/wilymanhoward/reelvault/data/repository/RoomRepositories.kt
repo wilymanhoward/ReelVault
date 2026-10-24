@@ -90,7 +90,9 @@ class RoomCollectionRepository @Inject constructor(private val db: ReelVaultData
     override fun observeCollections(): Flow<List<VaultCollection>> =
         dao.observeCollectionsWithStats().map { list -> list.map { it.toDomain() } }
 
-    override fun observeCollection(id: String): Flow<VaultCollection?> = dao.observeCollection(id).map { it?.toDomain() }
+    // Same query as the list, so a single collection also carries its live item count and cover.
+    override fun observeCollection(id: String): Flow<VaultCollection?> =
+        dao.observeCollectionsWithStats().map { list -> list.firstOrNull { it.collection.id == id }?.toDomain() }
 
     override fun observeItems(collectionId: String): Flow<List<SavedItem>> =
         dao.observeItems(collectionId).map { list -> list.map { it.toDomain() } }
@@ -257,7 +259,12 @@ internal fun CollectionEntity.toDomain() = VaultCollection(
 internal fun CollectionWithStats.toDomain() = collection.toDomain().copy(
     itemCount = itemCount,
     coverImage = coverLocalPath ?: coverThumbnailUrl,
+    coverHasBars = coverThumbnailUrl.hasBakedInBars(),
 )
+
+/** YouTube hqdefault and TikTok share-card images carry bars around the video that tiles crop away. */
+internal fun String?.hasBakedInBars(): Boolean =
+    this != null && ("img.youtube.com" in this || "i.ytimg.com" in this || "video-share-card" in this)
 
 internal fun TagRuleEntity.toDomain() = TagRule(
     id = id,

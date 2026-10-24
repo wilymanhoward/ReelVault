@@ -44,6 +44,8 @@ data class VaultCollection(
     val shareId: String? = null,
     val itemCount: Int = 0,
     val coverImage: String? = null,
+    /** The cover image has bars baked in around the video (YouTube, TikTok share cards); zoom to crop them. */
+    val coverHasBars: Boolean = false,
 )
 
 /** A tag on one item. */

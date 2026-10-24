@@ -59,6 +59,7 @@ import io.github.wilymanhoward.reelvault.ui.common.PlatformBadge
 import io.github.wilymanhoward.reelvault.ui.common.TextInputDialog
 import io.github.wilymanhoward.reelvault.ui.common.Thumbnail
 import io.github.wilymanhoward.reelvault.ui.common.displayUrl
+import io.github.wilymanhoward.reelvault.ui.common.headline
 import io.github.wilymanhoward.reelvault.ui.common.openVideo
 import io.github.wilymanhoward.reelvault.ui.common.shareVideo
 import io.github.wilymanhoward.reelvault.ui.common.sharedAcrossScreens
@@ -178,11 +179,11 @@ fun ItemDetailScreen(onBack: () -> Unit, viewModel: ItemDetailViewModel = hiltVi
             )
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 PlatformBadge(current)
-                (current.title ?: current.caption)?.let { Text(it, style = MaterialTheme.typography.titleLarge) }
+                Text(current.headline(), style = MaterialTheme.typography.titleLarge)
                 if (current.title != null && current.caption != null && current.caption != current.title) {
                     Text(current.caption, style = MaterialTheme.typography.bodyMedium)
                 }
-                current.authorName?.let { Text(it, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                current.authorName?.takeIf { current.title != null || current.caption != null }?.let { Text(it, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 Text(displayUrl(current.url), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Button(onClick = { openVideo(context, current.url, current.platform) }, modifier = Modifier.fillMaxWidth()) {
