@@ -9,6 +9,7 @@ import io.github.wilymanhoward.reelvault.domain.link.UrlNormalizer
 import io.github.wilymanhoward.reelvault.domain.model.Platform
 import io.github.wilymanhoward.reelvault.domain.model.SavedItem
 import io.github.wilymanhoward.reelvault.domain.repository.ItemRepository
+import io.github.wilymanhoward.reelvault.domain.repository.PreviewScheduler
 import io.github.wilymanhoward.reelvault.domain.usecase.SaveLinkUseCase
 import io.github.wilymanhoward.reelvault.domain.usecase.SaveResult
 import kotlinx.coroutines.channels.Channel
@@ -27,6 +28,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val items: ItemRepository,
     private val saveLink: SaveLinkUseCase,
+    private val previews: PreviewScheduler,
 ) : ViewModel() {
 
     val saves: StateFlow<List<SavedItem>> = items.observeItems()
@@ -41,6 +43,13 @@ class HomeViewModel @Inject constructor(
     val messages: Flow<String> = _messages.receiveAsFlow()
 
     private val dismissedLinks = mutableSetOf<String>()
+    // One refresh per item per screen lifetime, so a thumbnail that stays dead can't loop refreshes.
+    private val refreshedItems = mutableSetOf<String>()
+
+    /** The card's remote thumbnail answered 403/404: re-fetch the preview for a fresh URL. */
+    fun onThumbnailGone(itemId: String) {
+        if (refreshedItems.add(itemId)) previews.schedule(itemId)
+    }
 
     fun onClipboardText(text: String) {
         viewModelScope.launch {

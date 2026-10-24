@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
+import io.github.wilymanhoward.reelvault.domain.model.PreviewState
 import kotlinx.coroutines.flow.Flow
 
 /** Access to saved items. Queries skip soft-deleted rows unless they say otherwise. */
@@ -15,6 +16,32 @@ interface ItemDao {
 
     @Query("SELECT * FROM items WHERE id = :id AND deleted = 0")
     fun observeItem(id: String): Flow<SavedItemEntity?>
+
+    @Query("SELECT * FROM items WHERE id = :id")
+    suspend fun getById(id: String): SavedItemEntity?
+
+    /** Writes only preview columns, so edits made while a preview was fetching (notes, tags) survive. */
+    @Query(
+        """
+        UPDATE items SET title = :title, caption = :caption, authorName = :authorName, authorUrl = :authorUrl,
+            thumbnailUrl = :thumbnailUrl, localThumbnailPath = :localThumbnailPath, previewState = :state, updatedAt = :now
+        WHERE id = :id
+        """,
+    )
+    suspend fun updatePreview(
+        id: String,
+        title: String?,
+        caption: String?,
+        authorName: String?,
+        authorUrl: String?,
+        thumbnailUrl: String?,
+        localThumbnailPath: String?,
+        state: PreviewState,
+        now: Long,
+    )
+
+    @Query("UPDATE items SET previewState = :state WHERE id = :id")
+    suspend fun setPreviewState(id: String, state: PreviewState)
 
     /** Includes soft-deleted rows, so a re-saved link can revive its old row. */
     @Query("SELECT * FROM items WHERE normalizedUrl = :normalizedUrl")

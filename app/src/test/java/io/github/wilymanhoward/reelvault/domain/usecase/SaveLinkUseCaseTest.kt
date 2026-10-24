@@ -4,6 +4,7 @@ import io.github.wilymanhoward.reelvault.domain.model.Platform
 import io.github.wilymanhoward.reelvault.domain.model.PreviewState
 import io.github.wilymanhoward.reelvault.domain.model.SavedItem
 import io.github.wilymanhoward.reelvault.domain.repository.ItemRepository
+import io.github.wilymanhoward.reelvault.domain.repository.PreviewScheduler
 import io.github.wilymanhoward.reelvault.domain.repository.ShortLinkResolver
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -27,7 +28,8 @@ class SaveLinkUseCaseTest {
     private val items = FakeItems()
     private val resolved = mutableListOf<String>()
     private var redirectTo: String? = "https://www.tiktok.com/@chef/video/42?_r=1&is_from_webapp=1"
-    private val useCase = SaveLinkUseCase(items, ShortLinkResolver { resolved += it; redirectTo })
+    private val scheduled = mutableListOf<String>()
+    private val useCase = SaveLinkUseCase(items, ShortLinkResolver { resolved += it; redirectTo }, PreviewScheduler { scheduled += it })
 
     @Test fun resolvesShortLinkAndStoresCleanedUrl() = runTest {
         val result = useCase("Best pasta ever https://vm.tiktok.com/ZM42/ #food") as SaveResult.Saved
@@ -41,6 +43,7 @@ class SaveLinkUseCaseTest {
         useCase("https://vm.tiktok.com/ZM42/")
         val again = useCase("https://www.tiktok.com/@chef/video/42?lang=en")
         assertTrue(again is SaveResult.AlreadySaved)
+        assertEquals("only the first save fetches a preview", 1, scheduled.size)
     }
 
     @Test fun deadShortLinkKeepsOriginal() = runTest {
