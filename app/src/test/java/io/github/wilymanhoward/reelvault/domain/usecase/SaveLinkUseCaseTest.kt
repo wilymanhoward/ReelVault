@@ -3,6 +3,7 @@ package io.github.wilymanhoward.reelvault.domain.usecase
 import io.github.wilymanhoward.reelvault.domain.model.Platform
 import io.github.wilymanhoward.reelvault.domain.model.PreviewState
 import io.github.wilymanhoward.reelvault.domain.model.SavedItem
+import io.github.wilymanhoward.reelvault.domain.model.SearchFilter
 import io.github.wilymanhoward.reelvault.domain.repository.ItemRepository
 import io.github.wilymanhoward.reelvault.domain.repository.PreviewScheduler
 import io.github.wilymanhoward.reelvault.domain.repository.ShortLinkResolver
@@ -23,6 +24,15 @@ class SaveLinkUseCaseTest {
             caption = null, authorName = null, thumbnailUrl = null, localThumbnailPath = null, notes = "",
             previewState = PreviewState.PENDING, isFavorite = false, isPinned = false, createdAt = 0,
         ).also { byKey[normalizedUrl] = it }
+
+        // Not used by SaveLinkUseCase.
+        override fun observeItem(id: String): Flow<SavedItem?> = emptyFlow()
+        override fun search(query: String, filter: SearchFilter): Flow<List<SavedItem>> = emptyFlow()
+        override suspend fun setNotes(id: String, notes: String) = Unit
+        override suspend fun setFavorite(id: String, favorite: Boolean) = Unit
+        override suspend fun setPinned(id: String, pinned: Boolean) = Unit
+        override suspend fun delete(ids: Collection<String>) = Unit
+        override suspend fun restore(ids: Collection<String>) = Unit
     }
 
     private val items = FakeItems()

@@ -15,6 +15,9 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.wilymanhoward.reelvault.data.local.ItemDao
+import io.github.wilymanhoward.reelvault.data.settings.SettingsRepository
+import io.github.wilymanhoward.reelvault.domain.repository.TagRepository
+import kotlinx.coroutines.flow.first
 import io.github.wilymanhoward.reelvault.domain.model.PreviewState
 import io.github.wilymanhoward.reelvault.domain.repository.PreviewResolver
 import io.github.wilymanhoward.reelvault.domain.repository.PreviewScheduler
@@ -33,6 +36,9 @@ class PreviewWorker @AssistedInject constructor(
     private val items: ItemDao,
     private val resolver: PreviewResolver,
     private val thumbnails: ThumbnailCache,
+    private val labeler: ThumbnailLabeler,
+    private val tags: TagRepository,
+    private val settings: SettingsRepository,
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
@@ -57,6 +63,10 @@ class PreviewWorker @AssistedInject constructor(
                 state = PreviewState.READY,
                 now = System.currentTimeMillis(),
             )
+            if (localPath != null && settings.settings.first().imageLabeling) {
+                items.setImageLabels(id, labeler.labels(localPath).joinToString(","))
+            }
+            tags.applyAutoTags(id)
             Result.success()
         } catch (e: IOException) {
             if (runAttemptCount < MAX_ATTEMPTS) return Result.retry()

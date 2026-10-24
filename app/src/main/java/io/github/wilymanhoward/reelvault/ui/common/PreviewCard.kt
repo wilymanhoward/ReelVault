@@ -1,14 +1,26 @@
 package io.github.wilymanhoward.reelvault.ui.common
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -36,61 +49,105 @@ import java.io.File
 
 private enum class ImageState { LOADING, SHOWN, FAILED }
 
+/** Callbacks shared by grid cards and list rows. */
+class SaveActions(
+    val onClick: (SavedItem) -> Unit,
+    val onLongClick: (SavedItem) -> Unit,
+    val onDetails: (SavedItem) -> Unit,
+    val onThumbnailGone: (SavedItem) -> Unit,
+)
+
 /**
  * A saved item as a grid card: thumbnail with a gradient scrim, platform badge, title and author.
  * Without a usable image it shows the platform's gradient art instead, never a broken image.
- *
- * @param onThumbnailGone called when the remote thumbnail answers 403/404 (expired signed URL).
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PreviewCard(item: SavedItem, onClick: () -> Unit, onThumbnailGone: () -> Unit, modifier: Modifier = Modifier) {
-    val style = item.platform.style
-    val local = remember(item.localThumbnailPath) { item.localThumbnailPath?.let(::File)?.takeIf { it.exists() } }
-    val model: Any? = local ?: item.thumbnailUrl
-    var imageState by remember(model) { mutableStateOf(if (model == null) ImageState.FAILED else ImageState.LOADING) }
-    val pending = item.previewState == PreviewState.PENDING && model == null
+fun PreviewCard(item: SavedItem, selected: Boolean, actions: SaveActions, modifier: Modifier = Modifier) {
     val text = item.title ?: item.caption
-
-    Card(onClick = onClick, modifier = modifier, shape = RoundedCornerShape(20.dp)) {
-        Box(Modifier.fillMaxWidth().aspectRatio(style.aspectRatio)) {
-            when {
-                pending || imageState == ImageState.LOADING -> Box(Modifier.fillMaxSize().shimmer())
-                imageState == ImageState.FAILED -> FallbackArt(item)
-                else -> Unit
-            }
-            if (model != null) {
-                AsyncImage(
-                    model = model,
-                    contentDescription = text,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                    onSuccess = { imageState = ImageState.SHOWN },
-                    onError = { state ->
-                        imageState = ImageState.FAILED
-                        val code = (state.result.throwable as? HttpException)?.response?.code
-                        if (local == null && (code == 403 || code == 404)) onThumbnailGone()
-                    },
-                )
-            }
-            if (imageState == ImageState.SHOWN) {
-                Box(
-                    Modifier.fillMaxSize().background(
-                        Brush.verticalGradient(0.45f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f)),
-                    ),
-                )
-            }
-            PlatformBadge(item, Modifier.align(Alignment.TopStart).padding(10.dp))
-            if (imageState == ImageState.SHOWN && (text != null || item.authorName != null)) {
-                Column(Modifier.align(Alignment.BottomStart).padding(12.dp)) {
-                    text?.let {
-                        Text(it, color = Color.White, style = MaterialTheme.typography.titleSmall, maxLines = 3, overflow = TextOverflow.Ellipsis)
+    val shape = RoundedCornerShape(20.dp)
+    Card(
+        modifier = modifier
+            .clip(shape)
+            .then(if (selected) Modifier.border(3.dp, MaterialTheme.colorScheme.primary, shape) else Modifier)
+            .combinedClickable(onClick = { actions.onClick(item) }, onLongClick = { actions.onLongClick(item) }),
+        shape = shape,
+    ) {
+        Box(Modifier.fillMaxWidth().aspectRatio(item.platform.style.aspectRatio)) {
+            Thumbnail(item, Modifier.fillMaxSize(), onGone = { actions.onThumbnailGone(item) }) { shown ->
+                if (shown) {
+                    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.45f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f))))
+                    Column(Modifier.align(Alignment.BottomStart).padding(12.dp)) {
+                        text?.let { Text(it, color = Color.White, style = MaterialTheme.typography.titleSmall, maxLines = 3, overflow = TextOverflow.Ellipsis) }
+                        item.authorName?.let { Text(it, color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.labelMedium, maxLines = 1) }
                     }
-                    item.authorName?.let {
-                        Text(it, color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.labelMedium, maxLines = 1)
-                    }
+                } else {
+                    FallbackText(item, Modifier.align(Alignment.BottomStart))
                 }
             }
+            PlatformBadge(item, Modifier.align(Alignment.TopStart).padding(10.dp))
+            StatusIcons(item, Modifier.align(Alignment.TopEnd).padding(top = 6.dp, end = 40.dp))
+            IconButton(
+                onClick = { actions.onDetails(item) },
+                modifier = Modifier.align(Alignment.TopEnd).padding(2.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.MoreHoriz,
+                    contentDescription = "Details",
+                    tint = Color.White,
+                    modifier = Modifier.background(Color.Black.copy(alpha = 0.35f), CircleShape).padding(4.dp),
+                )
+            }
+            if (selected) {
+                Icon(
+                    Icons.Filled.CheckCircle,
+                    contentDescription = "Selected",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.align(Alignment.Center).size(48.dp).background(Color.White, CircleShape),
+                )
+            }
         }
+    }
+}
+
+/**
+ * The item's thumbnail with loading shimmer and platform fallback art. [overlay] is drawn on top and
+ * told whether a real image is showing.
+ *
+ * @param onGone called when the remote thumbnail answers 403/404 (expired signed URL).
+ */
+@Composable
+fun Thumbnail(
+    item: SavedItem,
+    modifier: Modifier = Modifier,
+    onGone: () -> Unit = {},
+    overlay: @Composable androidx.compose.foundation.layout.BoxScope.(shown: Boolean) -> Unit = {},
+) {
+    val local = remember(item.localThumbnailPath) { item.localThumbnailPath?.let(::File)?.takeIf { it.exists() } }
+    val model: Any? = local ?: item.thumbnailUrl
+    var state by remember(model) { mutableStateOf(if (model == null) ImageState.FAILED else ImageState.LOADING) }
+    val pending = item.previewState == PreviewState.PENDING && model == null
+    Box(modifier) {
+        when {
+            pending || state == ImageState.LOADING -> Box(Modifier.fillMaxSize().shimmer())
+            state == ImageState.FAILED -> FallbackArt(item)
+            else -> Unit
+        }
+        if (model != null) {
+            AsyncImage(
+                model = model,
+                contentDescription = item.title ?: item.caption,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize(),
+                onSuccess = { state = ImageState.SHOWN },
+                onError = { error ->
+                    state = ImageState.FAILED
+                    val code = (error.result.throwable as? HttpException)?.response?.code
+                    if (local == null && (code == 403 || code == 404)) onGone()
+                },
+            )
+        }
+        overlay(state == ImageState.SHOWN)
     }
 }
 
@@ -109,7 +166,17 @@ fun PlatformBadge(item: SavedItem, modifier: Modifier = Modifier) {
     )
 }
 
-/** Platform gradient, monogram and whatever text we have, for items without a usable thumbnail. */
+@Composable
+private fun StatusIcons(item: SavedItem, modifier: Modifier = Modifier, size: Dp = 18.dp) {
+    Box(modifier) {
+        when {
+            item.isPinned -> Icon(Icons.Filled.PushPin, "Pinned", tint = Color.White, modifier = Modifier.size(size))
+            item.isFavorite -> Icon(Icons.Filled.Star, "Favorite", tint = Color(0xFFFFC94D), modifier = Modifier.size(size))
+        }
+    }
+}
+
+/** Platform gradient and monogram, for items without a usable thumbnail. */
 @Composable
 private fun FallbackArt(item: SavedItem) {
     val style = item.platform.style
@@ -121,17 +188,24 @@ private fun FallbackArt(item: SavedItem) {
             fontWeight = FontWeight.Black,
             modifier = Modifier.align(Alignment.Center),
         )
-        Column(Modifier.align(Alignment.BottomStart).padding(12.dp)) {
-            (item.title ?: item.caption)?.let {
-                Text(it, color = Color.White, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            }
-            Text(
-                item.url.toHttpUrlOrNull()?.let { it.host.removePrefix("www.") + it.encodedPath } ?: item.url,
-                color = Color.White.copy(alpha = 0.75f),
-                style = MaterialTheme.typography.labelSmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
     }
 }
+
+@Composable
+private fun FallbackText(item: SavedItem, modifier: Modifier = Modifier) {
+    Column(modifier.padding(12.dp)) {
+        (item.title ?: item.caption)?.let {
+            Text(it, color = Color.White, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        }
+        Text(
+            displayUrl(item.url),
+            color = Color.White.copy(alpha = 0.75f),
+            style = MaterialTheme.typography.labelSmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** "tiktok.com/@a/video/1" instead of the full URL. */
+fun displayUrl(url: String): String = url.toHttpUrlOrNull()?.let { it.host.removePrefix("www.") + it.encodedPath } ?: url
