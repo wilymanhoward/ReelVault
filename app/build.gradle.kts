@@ -27,6 +27,12 @@ val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
+// Release signing key, gitignored like the keystore it points to. Without it (forks, CI) release builds
+// come out unsigned instead of failing.
+val keystoreProperties = rootProject.file("keystore.properties").takeIf { it.exists() }?.let { file ->
+    Properties().apply { file.inputStream().use { load(it) } }
+}
+
 android {
     namespace = "io.github.wilymanhoward.reelvault"
     compileSdk = 37
@@ -45,14 +51,38 @@ android {
         buildConfigField("String", "META_OEMBED_TOKEN","\"${localProperties.getProperty("meta.oembedToken", "").trim()}\"")
     }
 
+    signingConfigs {
+        if (keystoreProperties != null) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+        }
+    }
+
+    // ML Kit's native library is ~6-12 MB per CPU architecture, so release APKs for GitHub are also split
+    // per architecture: phones download arm64-v8a (or armeabi-v7a on older devices) at about half the size
+    // of the universal APK, which still covers everything, emulators included.
+    splits {
+        abi {
+            isEnable = gradle.startParameter.taskNames.any { "Release" in it }
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
+            isUniversalApk = true
         }
     }
 
