@@ -25,3 +25,8 @@ keystore.properties
 firebase-debug.log
 firestore-debug.log
 .runtimeconfig.json
+
+# Planning and audit files kept local, out of the public repo
+ReelVault_ClaudeCode_Prompt.md
+.21st/
+anti-slop/
