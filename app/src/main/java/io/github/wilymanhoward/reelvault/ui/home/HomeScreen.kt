@@ -48,7 +48,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.wilymanhoward.reelvault.domain.model.SortOrder
 import io.github.wilymanhoward.reelvault.domain.model.ViewMode
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import io.github.wilymanhoward.reelvault.domain.link.UrlExtractor
+import io.github.wilymanhoward.reelvault.ui.common.AddFab
 import io.github.wilymanhoward.reelvault.ui.common.ClipboardTextEffect
+import io.github.wilymanhoward.reelvault.ui.common.EmptyState
 import io.github.wilymanhoward.reelvault.ui.common.SavesScreen
 import io.github.wilymanhoward.reelvault.ui.common.readClipboardText
 
@@ -64,14 +70,17 @@ fun HomeScreen(onOpenItem: (String) -> Unit, viewModel: HomeViewModel = hiltView
 
     ClipboardTextEffect(viewModel::onClipboardText)
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     SavesScreen(
         viewModel = viewModel,
         items = saves,
         viewMode = settings.viewMode,
         onOpenItem = onOpenItem,
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
+            LargeTopAppBar(
                 title = { Text("ReelVault") },
+                scrollBehavior = scrollBehavior,
                 actions = {
                     var sortMenu by remember { mutableStateOf(false) }
                     IconButton(onClick = { sortMenu = true }) { Icon(Icons.AutoMirrored.Outlined.Sort, "Sort") }
@@ -108,19 +117,19 @@ fun HomeScreen(onOpenItem: (String) -> Unit, viewModel: HomeViewModel = hiltView
             }
         },
         emptyContent = {
-            Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                Text(
-                    "Nothing saved yet.\nShare a video to ReelVault from any app, or paste a link.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            EmptyState(
+                title = "Your vault is empty",
+                body = "In TikTok, Instagram, YouTube or any app, tap Share and pick ReelVault. Or add a link with the + button.",
+            )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { pasteText = readClipboardText(context).orEmpty() },
-                icon = { Icon(Icons.Outlined.ContentPaste, null) },
-                text = { Text("Paste link") },
+            AddFab(
+                onPaste = {
+                    val clip = readClipboardText(context).orEmpty()
+                    // A link on the clipboard saves straight away; anything else opens the dialog to fix up.
+                    if (UrlExtractor.extract(clip) != null) viewModel.save(clip) else pasteText = clip
+                },
+                onType = { pasteText = "" },
             )
         },
     )
@@ -154,7 +163,7 @@ private fun PasteLinkDialog(initial: String, onSave: (String) -> Unit, onDismiss
     var text by rememberSaveable { mutableStateOf(initial) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Save a link") },
+        title = { Text(if (initial.isEmpty()) "Add a link" else "Save a link") },
         text = {
             OutlinedTextField(
                 value = text,

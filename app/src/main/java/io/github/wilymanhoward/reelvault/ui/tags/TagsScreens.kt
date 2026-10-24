@@ -54,6 +54,7 @@ import io.github.wilymanhoward.reelvault.domain.model.TagSummary
 import io.github.wilymanhoward.reelvault.domain.repository.TagRepository
 import io.github.wilymanhoward.reelvault.ui.common.BackButton
 import io.github.wilymanhoward.reelvault.ui.common.ConfirmDialog
+import io.github.wilymanhoward.reelvault.ui.common.EmptyState
 import io.github.wilymanhoward.reelvault.ui.common.TextInputDialog
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -88,13 +89,11 @@ fun TagsScreen(onBack: () -> Unit, onTagClick: (String) -> Unit, viewModel: Tags
         topBar = { TopAppBar(title = { Text("Tags") }, navigationIcon = { BackButton(onBack) }) },
     ) { padding ->
         if (tags.isEmpty()) {
-            Box(Modifier.padding(padding).fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                Text(
-                    "No tags yet. Saves get tagged automatically from hashtags and your rules, or add tags on a save.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            EmptyState(
+                title = "No tags yet",
+                body = "Saves get tagged from their hashtags and your rules. You can also add tags on any save.",
+                modifier = Modifier.padding(padding),
+            )
         }
         LazyColumn(Modifier.padding(padding)) {
             items(tags, key = { it.name }) { tag ->

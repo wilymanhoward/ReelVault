@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vault dial (ring + 8 ticks) around a play triangle: "a vault for reels". Kept inside the
+     66dp safe zone of the 108dp adaptive-icon canvas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M54,32a22,22 0,1 1,0 44a22,22 0,1 1,0 -44z"
+        android:strokeWidth="4"
+        android:strokeColor="#FFFFFFFF"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M81,54L85,54M73.09,73.09L75.92,75.92M54,81L54,85M34.91,73.09L32.08,75.92M27,54L23,54M34.91,34.91L32.08,32.08M54,27L54,23M73.09,34.91L75.92,32.08"
+        android:strokeWidth="3.2"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M49,44.5L49,63.5L65,54Z"
+        android:fillColor="#FFFF5A6E" />
+</vector>

@@ -52,6 +52,7 @@ import io.github.wilymanhoward.reelvault.domain.repository.CollectionRepository
 import io.github.wilymanhoward.reelvault.ui.common.COLLECTION_COLORS
 import io.github.wilymanhoward.reelvault.ui.common.CollectionEditDialog
 import io.github.wilymanhoward.reelvault.ui.common.CollectionMark
+import io.github.wilymanhoward.reelvault.ui.common.EmptyState
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -111,13 +112,11 @@ fun CollectionsScreen(onOpenCollection: (String) -> Unit, viewModel: Collections
         },
     ) { padding ->
         if (collections.isEmpty()) {
-            Box(Modifier.padding(padding).fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                Text(
-                    "No collections yet.\nGroup saves by topic, trip or mood.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            EmptyState(
+                title = "No collections yet",
+                body = "Group saves by topic, trip or mood. Tap New collection to make one.",
+                modifier = Modifier.padding(padding),
+            )
         } else {
             LazyColumn(
                 Modifier.padding(padding),

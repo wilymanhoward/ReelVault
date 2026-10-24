@@ -18,4 +18,5 @@ data class AppSettings(
     val imageLabeling: Boolean = true,
     val sortOrder: SortOrder = SortOrder.NEWEST,
     val viewMode: ViewMode = ViewMode.GRID,
+    val onboardingDone: Boolean = false,
 )

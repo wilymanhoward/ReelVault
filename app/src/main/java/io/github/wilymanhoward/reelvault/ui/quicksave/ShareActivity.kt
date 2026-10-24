@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.wilymanhoward.reelvault.domain.model.AppSettings
 import io.github.wilymanhoward.reelvault.ui.MainViewModel
 import io.github.wilymanhoward.reelvault.ui.theme.ReelVaultTheme
 
@@ -25,7 +26,8 @@ class ShareActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val settings by mainViewModel.settings.collectAsStateWithLifecycle()
-            ReelVaultTheme(themeMode = settings.themeMode, dynamicColor = settings.dynamicColor) {
+            val loaded = settings ?: AppSettings()
+            ReelVaultTheme(themeMode = loaded.themeMode, dynamicColor = loaded.dynamicColor) {
                 QuickSaveSheet(onClose = ::finish)
             }
         }

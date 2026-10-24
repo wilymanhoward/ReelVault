@@ -4,6 +4,15 @@
         <item name="android:windowBackground">@color/window_background</item>
     </style>
 
+    <!-- Launch theme: the vault mark on the app background, then hands over to Theme.ReelVault. -->
+    <style name="Theme.ReelVault.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/window_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <!-- The mark is white; give it the brand circle so it reads on the light background too. -->
+        <item name="windowSplashScreenIconBackgroundColor">@color/brand_ultraviolet</item>
+        <item name="postSplashScreenTheme">@style/Theme.ReelVault</item>
+    </style>
+
     <!-- Quick-save sheet: the source app stays visible behind the sheet's scrim. -->
     <style name="Theme.ReelVault.Translucent">
         <item name="android:windowIsTranslucent">true</item>

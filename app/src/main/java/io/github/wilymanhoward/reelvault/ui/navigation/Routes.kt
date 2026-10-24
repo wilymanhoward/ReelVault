@@ -12,6 +12,7 @@ import kotlinx.serialization.Serializable
 @Serializable data object TagsRoute
 @Serializable data object SettingsRoute
 @Serializable data object TagRulesRoute
+@Serializable data object AboutRoute
 @Serializable data class CollectionDetailRoute(val collectionId: String)
 @Serializable data class ItemDetailRoute(val itemId: String)
 @Serializable data class SharedCollectionRoute(val shareId: String)

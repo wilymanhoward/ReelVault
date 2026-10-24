@@ -133,7 +133,7 @@ private fun DoneContent(
     if (alreadySaved) {
         Icon(Icons.Outlined.Info, null, Modifier.size(48.dp), tint = colors.secondary)
     } else {
-        AnimatedCheck(color = colors.primary, checkColor = colors.onPrimary)
+        AnimatedCheck(color = colors.primary, checkColor = colors.onPrimary, burstColor = colors.tertiary)
     }
     Spacer(Modifier.height(12.dp))
     Text(if (alreadySaved) "Already in your vault" else "Saved", style = MaterialTheme.typography.titleLarge)

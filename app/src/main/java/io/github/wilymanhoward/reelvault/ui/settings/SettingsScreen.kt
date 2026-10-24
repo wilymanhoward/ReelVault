@@ -1,6 +1,23 @@
 package io.github.wilymanhoward.reelvault.ui.settings
 
+import android.content.ContentResolver
+import android.net.Uri
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import io.github.wilymanhoward.reelvault.BuildConfig
+import io.github.wilymanhoward.reelvault.data.backup.BackupRepository
+import io.github.wilymanhoward.reelvault.domain.repository.PreviewScheduler
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.withContext
+import java.time.LocalDate
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -40,14 +57,48 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** App preferences. */
+/** App preferences, plus backup export/import. */
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val settings: SettingsRepository) : ViewModel() {
+class SettingsViewModel @Inject constructor(
+    private val settings: SettingsRepository,
+    private val backup: BackupRepository,
+    private val previews: PreviewScheduler,
+) : ViewModel() {
     val state: StateFlow<AppSettings> = settings.settings.stateIn(viewModelScope, SharingStarted.Eagerly, AppSettings())
+
+    private val _messages = Channel<String>(Channel.BUFFERED)
+    val messages = _messages.receiveAsFlow()
 
     fun setThemeMode(mode: ThemeMode) = viewModelScope.launch { settings.setThemeMode(mode) }
     fun setDynamicColor(enabled: Boolean) = viewModelScope.launch { settings.setDynamicColor(enabled) }
     fun setImageLabeling(enabled: Boolean) = viewModelScope.launch { settings.setImageLabeling(enabled) }
+
+    fun exportTo(uri: Uri, resolver: ContentResolver) = viewModelScope.launch {
+        val message = runCatching {
+            val text = backup.export()
+            withContext(Dispatchers.IO) {
+                resolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray()) } ?: error("Couldn't open the file")
+            }
+            "Exported your vault"
+        }.getOrElse { "Export failed: ${it.localizedMessage ?: it.javaClass.simpleName}" }
+        _messages.send(message)
+    }
+
+    fun importFrom(uri: Uri, resolver: ContentResolver) = viewModelScope.launch {
+        val message = runCatching {
+            val text = withContext(Dispatchers.IO) {
+                resolver.openInputStream(uri)?.use { it.readBytes().decodeToString() } ?: error("Couldn't open the file")
+            }
+            val result = backup.import(text)
+            result.addedIds.forEach(previews::schedule)
+            buildString {
+                append("Imported ${result.addedIds.size} saves")
+                if (result.skipped > 0) append(", ${result.skipped} already here")
+                if (result.collections > 0) append(", ${result.collections} collections")
+            }
+        }.getOrElse { it.localizedMessage ?: "Import failed" }
+        _messages.send(message)
+    }
 }
 
 /** The Settings tab. [accountSection] is the sign-in / sync block. */
@@ -55,12 +106,26 @@ class SettingsViewModel @Inject constructor(private val settings: SettingsReposi
 @Composable
 fun SettingsScreen(
     onEditRules: () -> Unit,
+    onOpenAbout: () -> Unit,
     accountSection: @Composable () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(Unit) { viewModel.messages.collect { snackbar.showSnackbar(it) } }
+    val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+        uri?.let { viewModel.exportTo(it, context.contentResolver) }
+    }
+    val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { viewModel.importFrom(it, context.contentResolver) }
+    }
 
-    Scaffold(contentWindowInsets = WindowInsets(0), topBar = { TopAppBar(title = { Text("Settings") }) }) { padding ->
+    Scaffold(
+        contentWindowInsets = WindowInsets(0),
+        snackbarHost = { SnackbarHost(snackbar) },
+        topBar = { TopAppBar(title = { Text("Settings") }) },
+    ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState())) {
             accountSection()
 
@@ -95,6 +160,26 @@ fun SettingsScreen(
                 modifier = Modifier.clickable(onClick = onEditRules),
                 headlineContent = { Text("Tag rules") },
                 supportingContent = { Text("Keywords that map saves to categories") },
+                trailingContent = { Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null) },
+            )
+
+            SectionTitle("Your data")
+            ListItem(
+                modifier = Modifier.clickable { exportLauncher.launch("reelvault-backup-${LocalDate.now()}.json") },
+                headlineContent = { Text("Export to a file") },
+                supportingContent = { Text("Saves, notes, tags, collections and rules as JSON") },
+            )
+            ListItem(
+                modifier = Modifier.clickable { importLauncher.launch(arrayOf("application/json", "text/plain")) },
+                headlineContent = { Text("Import from a file") },
+                supportingContent = { Text("Adds what's in a ReelVault backup; saves you already have are kept") },
+            )
+
+            SectionTitle("About")
+            ListItem(
+                modifier = Modifier.clickable(onClick = onOpenAbout),
+                headlineContent = { Text("About ReelVault") },
+                supportingContent = { Text("Version ${BuildConfig.VERSION_NAME}, licenses") },
                 trailingContent = { Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null) },
             )
         }
