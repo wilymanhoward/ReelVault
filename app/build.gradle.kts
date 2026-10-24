@@ -9,6 +9,12 @@ plugins {
     alias(libs.plugins.room)
 }
 
+// Firebase is optional at build time: without app/google-services.json (gitignored) the app still builds
+// and runs fully offline; sign-in and sync just report that they aren't set up. See the README.
+if (file("google-services.json").exists()) {
+    apply(plugin = libs.plugins.google.services.get().pluginId)
+}
+
 // Personal settings that must not be committed (local.properties is gitignored).
 val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -106,6 +112,13 @@ dependencies {
     implementation(libs.androidx.browser)
     implementation(libs.mlkit.image.labeling)
     implementation(libs.kotlinx.coroutines.play.services)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
 
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.hilt.work)

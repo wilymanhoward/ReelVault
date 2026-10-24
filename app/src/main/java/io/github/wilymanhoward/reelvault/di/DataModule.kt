@@ -12,6 +12,8 @@ import io.github.wilymanhoward.reelvault.data.remote.OkHttpShortLinkResolver
 import io.github.wilymanhoward.reelvault.data.repository.RoomCollectionRepository
 import io.github.wilymanhoward.reelvault.data.repository.RoomItemRepository
 import io.github.wilymanhoward.reelvault.data.repository.RoomTagRepository
+import io.github.wilymanhoward.reelvault.data.sync.FirestoreRemoteStore
+import io.github.wilymanhoward.reelvault.data.sync.RemoteStore
 import io.github.wilymanhoward.reelvault.domain.repository.TagRepository
 import io.github.wilymanhoward.reelvault.domain.repository.CollectionRepository
 import io.github.wilymanhoward.reelvault.domain.repository.ItemRepository
@@ -36,6 +38,7 @@ abstract class DataModule {
     @Binds abstract fun shortLinkResolver(impl: OkHttpShortLinkResolver): ShortLinkResolver
     @Binds abstract fun previewResolver(impl: NetworkPreviewResolver): PreviewResolver
     @Binds abstract fun previewScheduler(impl: WorkManagerPreviewScheduler): PreviewScheduler
+    @Binds abstract fun remoteStore(impl: FirestoreRemoteStore): RemoteStore
 
     companion object {
         @Provides

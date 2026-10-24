@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// ReelVault Firestore rules.
+// - users/{uid}/...: private. Only the signed-in owner (Google or anonymous) can read or write.
+// - shared/{shareId}: public snapshots of shared collections. Anyone can read; only the owner
+//   recorded in the snapshot can create, update or delete it, and ownership can't be handed over.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /shared/{shareId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if request.auth != null
+                    && resource.data.ownerUid == request.auth.uid
+                    && request.resource.data.ownerUid == resource.data.ownerUid;
+      allow delete: if request.auth != null
+                    && resource.data.ownerUid == request.auth.uid;
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
