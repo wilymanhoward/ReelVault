@@ -42,6 +42,7 @@ import io.github.wilymanhoward.reelvault.ui.navigation.SharedCollectionRoute
 import io.github.wilymanhoward.reelvault.ui.navigation.TagRulesRoute
 import io.github.wilymanhoward.reelvault.ui.navigation.TagsRoute
 import io.github.wilymanhoward.reelvault.ui.search.SearchScreen
+import io.github.wilymanhoward.reelvault.ui.settings.AccountSection
 import io.github.wilymanhoward.reelvault.ui.settings.SettingsScreen
 import io.github.wilymanhoward.reelvault.ui.tags.TagRulesScreen
 import io.github.wilymanhoward.reelvault.ui.tags.TagsScreen
@@ -99,7 +100,7 @@ fun AppShell() {
             composable<CollectionsRoute> { CollectionsScreen(onOpenCollection = { navController.navigate(CollectionDetailRoute(it)) }) }
             composable<SearchRoute> { SearchScreen(onOpenItem = openItem, onOpenTags = { navController.navigate(TagsRoute) }) }
             composable<TagsRoute> { TagsScreen(onBack = back, onTagClick = { navController.navigate(SearchRoute(tag = it)) }) }
-            composable<SettingsRoute> { SettingsScreen(onEditRules = { navController.navigate(TagRulesRoute) }, accountSection = {}) }
+            composable<SettingsRoute> { SettingsScreen(onEditRules = { navController.navigate(TagRulesRoute) }, accountSection = { AccountSection() }) }
             composable<TagRulesRoute> { TagRulesScreen(onBack = back) }
             composable<CollectionDetailRoute> { CollectionDetailScreen(onBack = back, onOpenItem = openItem) }
             composable<ItemDetailRoute> { ItemDetailScreen(onBack = back) }
