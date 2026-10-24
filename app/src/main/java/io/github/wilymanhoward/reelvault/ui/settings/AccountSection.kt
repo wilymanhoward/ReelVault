@@ -74,7 +74,8 @@ class AccountViewModel @Inject constructor(
         } catch (_: GetCredentialCancellationException) {
             // The user closed the account picker; nothing to report.
         } catch (e: Exception) {
-            _error.value = "$failure: ${e.localizedMessage ?: e.javaClass.simpleName}"
+            // Our own messages (IllegalStateException) are already user-facing; others get context.
+            _error.value = if (e is IllegalStateException) e.message else "$failure: ${e.localizedMessage ?: e.javaClass.simpleName}"
         } finally {
             _busy.value = false
         }

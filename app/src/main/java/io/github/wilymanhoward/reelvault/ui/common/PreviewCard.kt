@@ -93,7 +93,8 @@ fun PreviewCard(
         modifier = modifier
             .pressScale(interaction)
             .clip(shape)
-            .border(borderWidth, MaterialTheme.colorScheme.primary, shape)
+            // Compose draws a 0.dp border as a hairline, so only add it while it's visible.
+            .then(if (borderWidth > 0.dp) Modifier.border(borderWidth, MaterialTheme.colorScheme.primary, shape) else Modifier)
             .combinedClickable(
                 interactionSource = interaction,
                 indication = ripple(),
