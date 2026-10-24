@@ -7,6 +7,12 @@ it shows up as a preview card. Tap the card and the video opens in its own app.
 Your vault lives on the device and works fully offline. Sign in to back it up, sync between devices
 and share collections as links.
 
+## Download
+
+Get the latest APK from [Releases](https://github.com/wilymanhoward/ReelVault/releases/latest).
+Most phones want `app-arm64-v8a-release.apk`; older 32-bit phones want `armeabi-v7a`; if you're not
+sure, `app-universal-release.apk` runs everywhere (it's larger). Android 8.0 or newer.
+
 <!-- Screenshots: add images to docs/screenshots/ and reference them here. -->
 | Home | Item | Quick save | Shared collection |
 |---|---|---|---|
@@ -37,7 +43,7 @@ and share collections as links.
 - **Share** a single video, or a whole collection as a link to a web page anyone can open. With
   ReelVault installed, the link opens in the app with **Add to my vault**.
 - **Export and import** your vault as a JSON file.
-- Light, dark or system theme; optional Material You wallpaper colors; respects the system's
+- Light, dark or system theme in a fixed palette (dark by default); respects the system's
   "remove animations" setting.
 
 ## Tech stack
