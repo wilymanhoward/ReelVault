@@ -1,5 +1,6 @@
 package io.github.wilymanhoward.reelvault.ui.quicksave
 
+import io.github.wilymanhoward.reelvault.ui.common.displayUrl
 import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -134,7 +135,7 @@ private fun DoneContent(
     Spacer(Modifier.height(12.dp))
     Text(if (alreadySaved) "Already in your vault" else "Saved", style = MaterialTheme.typography.titleLarge)
     Text(
-        "${item.platform.displayName} · ${item.url}",
+        "${item.platform.displayName} · ${displayUrl(item.url)}",
         style = MaterialTheme.typography.bodySmall,
         color = colors.onSurfaceVariant,
         maxLines = 1,
