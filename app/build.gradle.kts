@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -5,6 +7,11 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.room)
+}
+
+// Personal settings that must not be committed (local.properties is gitignored).
+val localProperties = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
 android {
@@ -17,6 +24,10 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
+
+        // Optional Meta app token ("appId|clientToken") for Instagram/Facebook oEmbed.
+        // Empty = Open Graph scraping only.
+        buildConfigField("String", "META_OEMBED_TOKEN", "\"${localProperties.getProperty("meta.oembedToken", "").trim()}\"")
     }
 
     buildTypes {
@@ -87,6 +98,16 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.jsoup)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+    implementation(libs.androidx.browser)
+
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

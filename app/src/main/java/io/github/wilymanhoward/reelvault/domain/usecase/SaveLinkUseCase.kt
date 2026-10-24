@@ -5,6 +5,7 @@ import io.github.wilymanhoward.reelvault.domain.link.UrlExtractor
 import io.github.wilymanhoward.reelvault.domain.link.UrlNormalizer
 import io.github.wilymanhoward.reelvault.domain.model.SavedItem
 import io.github.wilymanhoward.reelvault.domain.repository.ItemRepository
+import io.github.wilymanhoward.reelvault.domain.repository.PreviewScheduler
 import io.github.wilymanhoward.reelvault.domain.repository.ShortLinkResolver
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import javax.inject.Inject
@@ -20,13 +21,16 @@ sealed interface SaveResult {
 class SaveLinkUseCase @Inject constructor(
     private val items: ItemRepository,
     private val resolver: ShortLinkResolver,
+    private val previews: PreviewScheduler,
 ) {
     suspend operator fun invoke(text: String): SaveResult {
         val raw = UrlExtractor.extract(text) ?: return SaveResult.NoLink
         val url = UrlNormalizer.clean(resolve(raw))
         val normalized = UrlNormalizer.normalize(url)
         items.findByNormalizedUrl(normalized)?.let { return SaveResult.AlreadySaved(it) }
-        return SaveResult.Saved(items.save(url, normalized, PlatformDetector.detect(url)))
+        val item = items.save(url, normalized, PlatformDetector.detect(url))
+        previews.schedule(item.id)
+        return SaveResult.Saved(item)
     }
 
     // Offline, or a dead short link that bounces to the site's home page: keep the short link itself.

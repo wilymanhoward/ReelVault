@@ -5,6 +5,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,8 +14,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.ContentPaste
@@ -25,7 +27,6 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -47,11 +48,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.wilymanhoward.reelvault.domain.model.SavedItem
 import io.github.wilymanhoward.reelvault.ui.common.ClipboardTextEffect
+import io.github.wilymanhoward.reelvault.ui.common.PreviewCard
+import io.github.wilymanhoward.reelvault.ui.common.openVideo
 import io.github.wilymanhoward.reelvault.ui.common.readClipboardText
 
-/** "All saves": every saved link, newest first. Phase 3 turns the rows into preview cards. */
+/** "All saves": a staggered grid of preview cards, newest first. Tapping a card opens the video. */
 @Composable
 fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     val saves by viewModel.saves.collectAsStateWithLifecycle()
@@ -95,8 +97,20 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                     )
                 }
             } else {
-                LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
-                    items(saves, key = { it.id }) { SaveRow(it, Modifier.animateItem()) }
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Adaptive(160.dp),
+                    contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 96.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalItemSpacing = 12.dp,
+                ) {
+                    items(saves, key = { it.id }) { item ->
+                        PreviewCard(
+                            item = item,
+                            onClick = { openVideo(context, item.url, item.platform) },
+                            onThumbnailGone = { viewModel.onThumbnailGone(item.id) },
+                            modifier = Modifier.animateItem(),
+                        )
+                    }
                 }
             }
         }
@@ -124,16 +138,6 @@ private fun ClipboardSuggestion(link: String, onSave: () -> Unit, onDismiss: () 
             IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, contentDescription = "Dismiss") }
         }
     }
-}
-
-@Composable
-private fun SaveRow(item: SavedItem, modifier: Modifier = Modifier) {
-    ListItem(
-        modifier = modifier,
-        overlineContent = { Text(item.platform.displayName) },
-        headlineContent = { Text(item.title ?: item.url, maxLines = 2, overflow = TextOverflow.Ellipsis) },
-        supportingContent = item.authorName?.let { { Text(it) } },
-    )
 }
 
 @Composable
