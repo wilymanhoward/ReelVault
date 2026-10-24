@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ReelVault</string>
+    <string name="share_label">Save to ReelVault</string>
 </resources>
