@@ -142,8 +142,8 @@ private fun SaveRow(item: SavedItem, selected: Boolean, actions: SaveActions) {
             }
         },
         overlineContent = { Text(item.platform.displayName) },
-        headlineContent = { Text(item.title ?: item.caption ?: displayUrl(item.url), maxLines = 2, overflow = TextOverflow.Ellipsis) },
-        supportingContent = item.authorName?.let { { Text(it, maxLines = 1) } },
+        headlineContent = { Text(item.headline(), maxLines = 2, overflow = TextOverflow.Ellipsis) },
+        supportingContent = item.authorName?.takeIf { item.title != null || item.caption != null }?.let { { Text(it, maxLines = 1) } },
         trailingContent = {
             IconButton(onClick = { actions.onDetails(item) }) { Icon(VaultIcons.More, contentDescription = "Details") }
         },

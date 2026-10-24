@@ -80,7 +80,7 @@ fun PreviewCard(
     modifier: Modifier = Modifier,
     showDetails: Boolean = true,
 ) {
-    val text = item.title ?: item.caption
+    val text = item.headline()
     val shape = RoundedCornerShape(16.dp)
     val interaction = remember { MutableInteractionSource() }
     val haptics = LocalHapticFeedback.current
@@ -119,9 +119,9 @@ fun PreviewCard(
             SelectedMark(selected, Modifier.align(Alignment.Center))
         }
         Column(Modifier.padding(horizontal = 4.dp, vertical = 10.dp)) {
-            Text(text ?: displayUrl(item.url), style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(text, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(
-                listOfNotNull(item.platform.displayName, item.authorName).joinToString(" · "),
+                item.metaLine(),
                 style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
@@ -176,9 +176,11 @@ fun Thumbnail(
                 model = model,
                 contentDescription = item.title ?: item.caption,
                 contentScale = ContentScale.Crop,
-                // YouTube's hqdefault.jpg is 4:3 with black bars baked in above and below; zoom past them.
+                // Some thumbnails carry bars baked in: YouTube's hqdefault.jpg is 4:3 with black bars above and
+                // below, and TikTok's "share card" is a wide 1200x630 image with the portrait video in the middle
+                // and blurred edges. In a 3:4 frame a 1.34x zoom crops both to the video itself.
                 modifier = Modifier.fillMaxSize().then(
-                    if (item.platform == Platform.YOUTUBE) Modifier.graphicsLayer { scaleX = 1.34f; scaleY = 1.34f } else Modifier,
+                    if (item.hasBakedInBars()) Modifier.graphicsLayer { scaleX = 1.34f; scaleY = 1.34f } else Modifier,
                 ),
                 onSuccess = { state = ImageState.SHOWN },
                 onError = { error ->
@@ -244,6 +246,19 @@ private fun FallbackArt(item: SavedItem) {
         )
     }
 }
+
+/**
+ * What a save is called on cards and rows: its title, else its caption, else its author (TikTok often
+ * gives no caption), and only as a last resort its link.
+ */
+fun SavedItem.headline(): String = title ?: caption ?: authorName ?: displayUrl(url)
+
+/** The line under the headline: the platform, plus the author unless the author already is the headline. */
+fun SavedItem.metaLine(): String =
+    listOfNotNull(platform.displayName, authorName.takeUnless { title == null && caption == null }).joinToString(" · ")
+
+private fun SavedItem.hasBakedInBars() =
+    platform == Platform.YOUTUBE || (platform == Platform.TIKTOK && thumbnailUrl?.contains("video-share-card") == true)
 
 /** "tiktok.com/@a/video/1" instead of the full URL. */
 fun displayUrl(url: String): String = url.toHttpUrlOrNull()?.let { it.host.removePrefix("www.") + it.encodedPath } ?: url
