@@ -6,12 +6,8 @@ import androidx.room.Fts4
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import io.github.wilymanhoward.reelvault.domain.model.Platform
-
-/** Where a preview's metadata stands. */
-enum class PreviewState { PENDING, READY, FAILED }
-
-/** Whether a tag was added by the auto-tagger or by the user. */
-enum class TagSource { AUTO, MANUAL }
+import io.github.wilymanhoward.reelvault.domain.model.PreviewState
+import io.github.wilymanhoward.reelvault.domain.model.TagSource
 
 /**
  * One saved video link.

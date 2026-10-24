@@ -27,6 +27,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import io.github.wilymanhoward.reelvault.ui.home.HomeScreen
 import io.github.wilymanhoward.reelvault.ui.navigation.CollectionDetailRoute
 import io.github.wilymanhoward.reelvault.ui.navigation.CollectionsRoute
 import io.github.wilymanhoward.reelvault.ui.navigation.HomeRoute
@@ -83,7 +84,7 @@ fun AppShell() {
             modifier = Modifier.padding(padding),
         ) {
             composable<OnboardingRoute> { PlaceholderScreen("Onboarding") }
-            composable<HomeRoute> { PlaceholderScreen("All saves") }
+            composable<HomeRoute> { HomeScreen() }
             composable<CollectionsRoute> { PlaceholderScreen("Collections") }
             composable<SearchRoute> { PlaceholderScreen("Search") }
             composable<TagsRoute> { PlaceholderScreen("Tags") }

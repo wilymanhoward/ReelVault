@@ -23,6 +23,10 @@ interface ItemDao {
     @Upsert
     suspend fun upsert(item: SavedItemEntity)
 
+    /** Bumps `updatedAt` so sync picks up changes stored in other tables (collections, tags). */
+    @Query("UPDATE items SET updatedAt = :now WHERE id = :id")
+    suspend fun touch(id: String, now: Long)
+
     /** @param match an FTS4 MATCH expression, already escaped by the caller. */
     @Query(
         """
@@ -44,8 +48,17 @@ interface CollectionDao {
     @Upsert
     suspend fun upsert(collection: CollectionEntity)
 
+    @Query("SELECT COALESCE(MAX(sortOrder), -1) FROM collections")
+    suspend fun maxSortOrder(): Int
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addItem(ref: CollectionItemCrossRef)
+
+    @Query("DELETE FROM collection_items WHERE collectionId = :collectionId AND itemId = :itemId")
+    suspend fun removeItem(collectionId: String, itemId: String)
+
+    @Query("SELECT collectionId FROM collection_items WHERE itemId = :itemId")
+    fun observeCollectionIdsFor(itemId: String): Flow<List<String>>
 
     @Query(
         """
