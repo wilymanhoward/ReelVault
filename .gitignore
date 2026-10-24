@@ -17,6 +17,9 @@ google-services.json
 keystore.properties
 *.p12
 
+# Local Claude Code session config (machine-specific paths)
+.claude/
+
 # Firebase CLI
 .firebase/
 firebase-debug.log

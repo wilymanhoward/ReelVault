@@ -24,6 +24,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -71,6 +72,7 @@ import io.github.wilymanhoward.reelvault.ui.common.TextInputDialog
 import io.github.wilymanhoward.reelvault.ui.common.Thumbnail
 import io.github.wilymanhoward.reelvault.ui.common.displayUrl
 import io.github.wilymanhoward.reelvault.ui.common.openVideo
+import io.github.wilymanhoward.reelvault.ui.common.shareVideo
 import io.github.wilymanhoward.reelvault.ui.navigation.ItemDetailRoute
 import io.github.wilymanhoward.reelvault.ui.theme.style
 import kotlinx.coroutines.FlowPreview
@@ -165,6 +167,7 @@ fun ItemDetailScreen(onBack: () -> Unit, viewModel: ItemDetailViewModel = hiltVi
                     IconButton(onClick = { viewModel.togglePinned() }) {
                         Icon(if (current.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin, if (current.isPinned) "Unpin" else "Pin")
                     }
+                    IconButton(onClick = { shareVideo(context, current.url, current.platform) }) { Icon(Icons.Outlined.Share, "Share") }
                     IconButton(onClick = { dialog = DetailDialog.DELETE }) { Icon(Icons.Outlined.Delete, "Delete") }
                 },
             )

@@ -1,5 +1,13 @@
 package io.github.wilymanhoward.reelvault.ui
 
+import android.content.Intent
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
+import androidx.compose.runtime.DisposableEffect
+import androidx.core.util.Consumer
+import androidx.navigation.navDeepLink
+import io.github.wilymanhoward.reelvault.BuildConfig
+import io.github.wilymanhoward.reelvault.ui.shared.SharedCollectionScreen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -63,6 +71,13 @@ fun AppShell() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val showBottomBar = topLevelDestinations.any { currentDestination?.hasRoute(it.route::class) == true }
+    // MainActivity is singleTask, so links tapped while the app is open arrive as new intents.
+    val activity = LocalActivity.current as? ComponentActivity
+    DisposableEffect(activity, navController) {
+        val listener = Consumer<Intent> { navController.handleDeepLink(it) }
+        activity?.addOnNewIntentListener(listener)
+        onDispose { activity?.removeOnNewIntentListener(listener) }
+    }
     val openItem: (String) -> Unit = { navController.navigate(ItemDetailRoute(it)) }
     val back: () -> Unit = { navController.popBackStack() }
 
@@ -104,7 +119,10 @@ fun AppShell() {
             composable<TagRulesRoute> { TagRulesScreen(onBack = back) }
             composable<CollectionDetailRoute> { CollectionDetailScreen(onBack = back, onOpenItem = openItem) }
             composable<ItemDetailRoute> { ItemDetailScreen(onBack = back) }
-            composable<SharedCollectionRoute> { PlaceholderScreen("Shared ${it.toRoute<SharedCollectionRoute>().shareId}") }
+            composable<SharedCollectionRoute>(
+                // https://<project>.web.app/c/{shareId}, the same link the Hosting page serves.
+                deepLinks = listOf(navDeepLink<SharedCollectionRoute>(basePath = "https://${BuildConfig.SHARE_HOST}/c")),
+            ) { SharedCollectionScreen(onBack = back) }
         }
     }
 }
