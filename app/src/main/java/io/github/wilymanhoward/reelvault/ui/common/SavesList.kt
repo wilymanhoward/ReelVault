@@ -1,5 +1,17 @@
 package io.github.wilymanhoward.reelvault.ui.common
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -53,24 +65,40 @@ fun SavesList(
 ) {
     // Swiping is off while selecting, so a stray swipe can't delete during a batch action.
     val swipeEnabled = selected.isEmpty()
-    when (viewMode) {
-        ViewMode.GRID -> LazyVerticalStaggeredGrid(
-            columns = StaggeredGridCells.Adaptive(160.dp),
-            modifier = modifier,
-            contentPadding = contentPadding,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalItemSpacing = 12.dp,
-        ) {
-            items(items, key = { it.id }) { item ->
-                SwipeToDelete(swipeEnabled, onDelete = { onDelete(item) }, modifier = Modifier.animateItem()) {
-                    PreviewCard(item, selected = item.id in selected, actions = actions)
+    // The first screenful staggers in once per screen; later inserts use animateItem instead.
+    var firstLoad by rememberSaveable { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        delay(1_200)
+        firstLoad = false
+    }
+    AnimatedContent(targetState = viewMode, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "viewMode") { mode ->
+        when (mode) {
+            ViewMode.GRID -> LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Adaptive(160.dp),
+                modifier = modifier,
+                contentPadding = contentPadding,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalItemSpacing = 12.dp,
+            ) {
+                itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
+                    SwipeToDelete(
+                        swipeEnabled,
+                        onDelete = { onDelete(item) },
+                        modifier = Modifier.animateItem().staggeredEntrance(index, firstLoad),
+                    ) {
+                        PreviewCard(item, selected = item.id in selected, actions = actions)
+                    }
                 }
             }
-        }
-        ViewMode.LIST -> LazyColumn(modifier = modifier, contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding())) {
-            items(items, key = { it.id }) { item ->
-                SwipeToDelete(swipeEnabled, onDelete = { onDelete(item) }, modifier = Modifier.animateItem()) {
-                    SaveRow(item, selected = item.id in selected, actions = actions)
+            ViewMode.LIST -> LazyColumn(modifier = modifier, contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding())) {
+                itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
+                    SwipeToDelete(
+                        swipeEnabled,
+                        onDelete = { onDelete(item) },
+                        modifier = Modifier.animateItem().staggeredEntrance(index, firstLoad),
+                    ) {
+                        SaveRow(item, selected = item.id in selected, actions = actions)
+                    }
                 }
             }
         }
@@ -111,7 +139,7 @@ private fun SaveRow(item: SavedItem, selected: Boolean, actions: SaveActions) {
             containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
         ),
         leadingContent = {
-            Box(Modifier.size(56.dp).clip(RoundedCornerShape(12.dp))) {
+            Box(Modifier.size(56.dp).sharedAcrossScreens(thumbnailKey(item.id)).clip(RoundedCornerShape(12.dp))) {
                 Thumbnail(item, Modifier.fillMaxSize(), onGone = { actions.onThumbnailGone(item) })
                 if (selected) Icon(Icons.Filled.CheckCircle, "Selected", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.align(Alignment.Center))
             }

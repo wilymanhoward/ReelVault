@@ -1,6 +1,18 @@
 package io.github.wilymanhoward.reelvault.ui.search
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.layout.statusBarsPadding
+import io.github.wilymanhoward.reelvault.ui.common.pressScale
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,6 +63,7 @@ import io.github.wilymanhoward.reelvault.domain.repository.CollectionRepository
 import io.github.wilymanhoward.reelvault.domain.repository.ItemRepository
 import io.github.wilymanhoward.reelvault.domain.repository.TagRepository
 import io.github.wilymanhoward.reelvault.ui.common.BatchActions
+import io.github.wilymanhoward.reelvault.ui.common.EmptyState
 import io.github.wilymanhoward.reelvault.ui.common.SavesScreen
 import io.github.wilymanhoward.reelvault.ui.common.SavesViewModel
 import io.github.wilymanhoward.reelvault.ui.navigation.SearchRoute
@@ -119,6 +132,9 @@ fun SearchScreen(onOpenItem: (String) -> Unit, onOpenTags: () -> Unit, viewModel
     val collections by viewModel.collections.collectAsStateWithLifecycle()
     val tags by viewModel.allTags.collectAsStateWithLifecycle()
     val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
+    val fieldInteraction = remember { MutableInteractionSource() }
+    val focused by fieldInteraction.collectIsFocusedAsState()
+    val corner by animateDpAsState(if (focused) 16.dp else 28.dp, label = "searchCorner")
 
     SavesScreen(
         viewModel = viewModel,
@@ -126,24 +142,30 @@ fun SearchScreen(onOpenItem: (String) -> Unit, onOpenTags: () -> Unit, viewModel
         viewMode = viewMode,
         onOpenItem = onOpenItem,
         topBar = {
-            TopAppBar(
-                title = { Text("Search") },
-                actions = { IconButton(onClick = onOpenTags) { Icon(Icons.Outlined.Sell, "Tags") } },
-            )
+            // While typing, the title folds away so the search field takes over the header.
+            AnimatedVisibility(visible = !focused, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                TopAppBar(
+                    title = { Text("Search") },
+                    actions = { IconButton(onClick = onOpenTags) { Icon(Icons.Outlined.Sell, "Tags") } },
+                )
+            }
         },
         header = {
-            Column(Modifier.animateContentSize()) {
+            Column(Modifier.animateContentSize().then(if (focused) Modifier.statusBarsPadding() else Modifier)) {
                 OutlinedTextField(
                     value = query,
                     onValueChange = viewModel::setQuery,
                     placeholder = { Text("Titles, captions, authors, tags, notes…") },
                     leadingIcon = { Icon(Icons.Outlined.Search, null) },
                     trailingIcon = {
-                        if (query.isNotEmpty()) IconButton(onClick = { viewModel.setQuery("") }) { Icon(Icons.Outlined.Close, "Clear") }
+                        AnimatedVisibility(visible = query.isNotEmpty(), enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()) {
+                            IconButton(onClick = { viewModel.setQuery("") }) { Icon(Icons.Outlined.Close, "Clear") }
+                        }
                     },
                     singleLine = true,
-                    shape = RoundedCornerShape(28.dp),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(corner),
+                    interactionSource = fieldInteraction,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                 )
                 LazyRow(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -167,24 +189,24 @@ fun SearchScreen(onOpenItem: (String) -> Unit, onOpenTags: () -> Unit, viewModel
                     }
                     items(Platform.entries.filter { it != Platform.OTHER }) { platform ->
                         val selected = platform in filter.platforms
+                        val interaction = remember { MutableInteractionSource() }
                         FilterChip(
                             selected = selected,
                             onClick = { viewModel.togglePlatform(platform) },
                             label = { Text(platform.displayName) },
                             leadingIcon = if (selected) ({ Icon(Icons.Filled.Check, null, Modifier.size(16.dp)) }) else null,
-                            modifier = Modifier.animateItem(),
+                            interactionSource = interaction,
+                            modifier = Modifier.animateItem().pressScale(interaction, 0.9f).animateContentSize(),
                         )
                     }
                 }
             }
         },
         emptyContent = {
-            Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                Text(
-                    if (query.isBlank() && filter.isEmpty) "Your saves will show up here." else "Nothing matches.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            if (query.isBlank() && filter.isEmpty) {
+                EmptyState("Nothing to search yet", "Saves you add show up here, searchable by title, caption, author, tag and note.")
+            } else {
+                EmptyState("Nothing matches", "Try fewer words, or clear a filter.")
             }
         },
     )

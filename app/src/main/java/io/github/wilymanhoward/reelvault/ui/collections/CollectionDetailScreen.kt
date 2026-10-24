@@ -55,6 +55,7 @@ import io.github.wilymanhoward.reelvault.ui.common.BackButton
 import io.github.wilymanhoward.reelvault.ui.common.BatchActions
 import io.github.wilymanhoward.reelvault.ui.common.CollectionEditDialog
 import io.github.wilymanhoward.reelvault.ui.common.ConfirmDialog
+import io.github.wilymanhoward.reelvault.ui.common.EmptyState
 import io.github.wilymanhoward.reelvault.ui.common.SavesEvent
 import io.github.wilymanhoward.reelvault.ui.common.SavesScreen
 import io.github.wilymanhoward.reelvault.ui.common.SavesViewModel
@@ -171,13 +172,10 @@ fun CollectionDetailScreen(
             )
         },
         emptyContent = {
-            Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                Text(
-                    "This collection is empty.\nAdd saves from the share sheet, or select saves and tap “Add to collection”.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            EmptyState(
+                title = "Nothing in here yet",
+                body = "Pick this collection when you save from the share sheet, or long-press saves anywhere and tap Add to collection.",
+            )
         },
         extraSelectionActions = { selected, clear ->
             if (selected.size == 1) {

@@ -119,6 +119,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.browser)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.mlkit.image.labeling)
     implementation(libs.kotlinx.coroutines.play.services)
 

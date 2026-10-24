@@ -1,5 +1,17 @@
 package io.github.wilymanhoward.reelvault.ui.common
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material3.ripple
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -74,15 +86,31 @@ fun PreviewCard(
 ) {
     val text = item.title ?: item.caption
     val shape = RoundedCornerShape(20.dp)
+    val interaction = remember { MutableInteractionSource() }
+    val haptics = LocalHapticFeedback.current
+    val borderWidth by animateDpAsState(if (selected) 3.dp else 0.dp, label = "selectionBorder")
     Card(
         modifier = modifier
+            .pressScale(interaction)
             .clip(shape)
-            .then(if (selected) Modifier.border(3.dp, MaterialTheme.colorScheme.primary, shape) else Modifier)
-            .combinedClickable(onClick = { actions.onClick(item) }, onLongClick = { actions.onLongClick(item) }),
+            .border(borderWidth, MaterialTheme.colorScheme.primary, shape)
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = ripple(),
+                onClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    actions.onClick(item)
+                },
+                onLongClick = { actions.onLongClick(item) },
+            ),
         shape = shape,
     ) {
         Box(Modifier.fillMaxWidth().aspectRatio(item.platform.style.aspectRatio)) {
-            Thumbnail(item, Modifier.fillMaxSize(), onGone = { actions.onThumbnailGone(item) }) { shown ->
+            Thumbnail(
+                item,
+                Modifier.fillMaxSize().sharedAcrossScreens(thumbnailKey(item.id)),
+                onGone = { actions.onThumbnailGone(item) },
+            ) { shown ->
                 if (shown) {
                     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.45f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f))))
                     Column(Modifier.align(Alignment.BottomStart).padding(12.dp)) {
@@ -108,15 +136,26 @@ fun PreviewCard(
                     )
                 }
             }
-            if (selected) {
-                Icon(
-                    Icons.Filled.CheckCircle,
-                    contentDescription = "Selected",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.align(Alignment.Center).size(48.dp).background(Color.White, CircleShape),
-                )
-            }
+            SelectedMark(selected, Modifier.align(Alignment.Center))
         }
+    }
+}
+
+/** The check that pops in over a selected card. */
+@Composable
+private fun SelectedMark(selected: Boolean, modifier: Modifier = Modifier) {
+    AnimatedVisibility(
+        visible = selected,
+        enter = scaleIn(spring(dampingRatio = Spring.DampingRatioMediumBouncy)) + fadeIn(),
+        exit = scaleOut() + fadeOut(),
+        modifier = modifier,
+    ) {
+        Icon(
+            Icons.Filled.CheckCircle,
+            contentDescription = "Selected",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(48.dp).background(Color.White, CircleShape),
+        )
     }
 }
 

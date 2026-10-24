@@ -73,6 +73,8 @@ import io.github.wilymanhoward.reelvault.ui.common.Thumbnail
 import io.github.wilymanhoward.reelvault.ui.common.displayUrl
 import io.github.wilymanhoward.reelvault.ui.common.openVideo
 import io.github.wilymanhoward.reelvault.ui.common.shareVideo
+import io.github.wilymanhoward.reelvault.ui.common.sharedAcrossScreens
+import io.github.wilymanhoward.reelvault.ui.common.thumbnailKey
 import io.github.wilymanhoward.reelvault.ui.navigation.ItemDetailRoute
 import io.github.wilymanhoward.reelvault.ui.theme.style
 import kotlinx.coroutines.FlowPreview
@@ -180,7 +182,11 @@ fun ItemDetailScreen(onBack: () -> Unit, viewModel: ItemDetailViewModel = hiltVi
         ) {
             Thumbnail(
                 current,
-                Modifier.fillMaxWidth().aspectRatio(current.platform.style.aspectRatio.coerceAtLeast(0.8f)).clip(RoundedCornerShape(24.dp)),
+                Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(current.platform.style.aspectRatio.coerceAtLeast(0.8f))
+                    .sharedAcrossScreens(thumbnailKey(current.id))
+                    .clip(RoundedCornerShape(24.dp)),
             )
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 PlatformBadge(current)

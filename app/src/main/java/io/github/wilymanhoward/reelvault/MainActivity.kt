@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.wilymanhoward.reelvault.data.share.shareIdFromLink
@@ -26,15 +27,25 @@ class MainActivity : ComponentActivity() {
     private val pendingShareId = MutableStateFlow<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Must run before super.onCreate so the splash theme hands over to the app theme.
+        val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         // Only a fresh launch: after a config change the shared screen is already on the back stack.
         if (savedInstanceState == null) pendingShareId.value = shareIdOf(intent)
+        // Keep the system splash up until settings are read (usually a few ms).
+        splash.setKeepOnScreenCondition { viewModel.settings.value == null }
         setContent {
             val settings by viewModel.settings.collectAsStateWithLifecycle()
             val shareId by pendingShareId.collectAsStateWithLifecycle()
-            ReelVaultTheme(themeMode = settings.themeMode, dynamicColor = settings.dynamicColor) {
-                AppShell(pendingShareId = shareId, onShareIdHandled = { pendingShareId.value = null })
+            val loaded = settings ?: return@setContent
+            ReelVaultTheme(themeMode = loaded.themeMode, dynamicColor = loaded.dynamicColor) {
+                AppShell(
+                    onboardingDone = loaded.onboardingDone,
+                    onFinishOnboarding = { viewModel.finishOnboarding() },
+                    pendingShareId = shareId,
+                    onShareIdHandled = { pendingShareId.value = null },
+                )
             }
         }
     }

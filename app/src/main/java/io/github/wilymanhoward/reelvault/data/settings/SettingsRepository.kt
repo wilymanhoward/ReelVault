@@ -29,8 +29,11 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
             imageLabeling = prefs[IMAGE_LABELING] ?: true,
             sortOrder = prefs.enum(SORT_ORDER, SortOrder.NEWEST),
             viewMode = prefs.enum(VIEW_MODE, ViewMode.GRID),
+            onboardingDone = prefs[ONBOARDING_DONE] ?: false,
         )
     }
+
+    suspend fun setOnboardingDone() = set(ONBOARDING_DONE, true)
 
     suspend fun setThemeMode(mode: ThemeMode) = set(THEME_MODE, mode.name)
     suspend fun setDynamicColor(enabled: Boolean) = set(DYNAMIC_COLOR, enabled)
@@ -51,5 +54,6 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         val IMAGE_LABELING = booleanPreferencesKey("image_labeling")
         val SORT_ORDER = stringPreferencesKey("sort_order")
         val VIEW_MODE = stringPreferencesKey("view_mode")
+        val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
     }
 }
