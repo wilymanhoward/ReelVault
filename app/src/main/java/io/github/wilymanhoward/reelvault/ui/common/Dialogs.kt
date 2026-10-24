@@ -32,6 +32,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -144,7 +145,7 @@ fun CollectionEditDialog(
 ) {
     var name by rememberSaveable { mutableStateOf(initial?.name.orEmpty()) }
     var emoji by rememberSaveable { mutableStateOf(initial?.emoji.orEmpty()) }
-    var color by rememberSaveable { mutableStateOf(initial?.colorArgb ?: COLLECTION_COLORS.first()) }
+    var color by rememberSaveable { mutableLongStateOf(initial?.colorArgb ?: COLLECTION_COLORS.first()) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },

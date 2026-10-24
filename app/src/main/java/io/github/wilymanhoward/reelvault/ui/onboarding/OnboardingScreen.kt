@@ -142,15 +142,17 @@ private fun ShareSheetArt(active: Boolean) {
     val colors = MaterialTheme.colorScheme
     val apps = listOf(Color(0xFF4CB782), Color(0xFF3B8BFF), Color(0xFFF2A93B))
     Box(contentAlignment = Alignment.Center) {
-        Canvas(Modifier.size(width = 170.dp, height = 270.dp)) {
+        // Clipped to the phone's shape so the sliding sheet never pokes out below it.
+        Canvas(Modifier.size(width = 170.dp, height = 270.dp).clip(RoundedCornerShape(28.dp))) {
             val phone = CornerRadius(28.dp.toPx())
-            drawRoundRect(colors.surfaceContainerHigh, cornerRadius = phone)
+            drawRoundRect(colors.outlineVariant, cornerRadius = phone)
             // The video playing behind the sheet.
             drawRoundRect(Brush.verticalGradient(Platform.TIKTOK.style.colors), Offset(10.dp.toPx(), 10.dp.toPx()), Size(size.width - 20.dp.toPx(), size.height - 20.dp.toPx()), CornerRadius(20.dp.toPx()))
             val sheetHeight = size.height * 0.42f
             val slide = (1f - easeOut(p.value.coerceIn(0f, 0.6f) / 0.6f)) * sheetHeight
             translate(top = size.height - sheetHeight + slide) {
-                drawRoundRect(colors.surface, size = Size(size.width, sheetHeight), cornerRadius = CornerRadius(22.dp.toPx()))
+                // A raised surface, so the sheet reads as a sheet and not as a hole into the page.
+                drawRoundRect(colors.surfaceContainerHighest, size = Size(size.width, sheetHeight), cornerRadius = CornerRadius(22.dp.toPx()))
                 val dot = 30.dp.toPx()
                 val gap = (size.width - dot * 4) / 5
                 apps.forEachIndexed { i, c -> drawCircle(c, dot / 2, Offset(gap + dot / 2 + i * (dot + gap), sheetHeight * 0.4f)) }

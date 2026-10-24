@@ -5,6 +5,7 @@ import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.NoCredentialException
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
@@ -79,7 +80,11 @@ class AccountRepository @Inject constructor(
         val request = GetCredentialRequest.Builder()
             .addCredentialOption(GetSignInWithGoogleOption.Builder(clientId).build())
             .build()
-        val credential = CredentialManager.create(activityContext).getCredential(activityContext, request).credential
+        val credential = try {
+            CredentialManager.create(activityContext).getCredential(activityContext, request).credential
+        } catch (_: NoCredentialException) {
+            throw IllegalStateException("No Google account on this phone. Add one in system Settings, or tap Sync without an account.")
+        }
         require(credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
             "Unexpected credential type"
         }
