@@ -1,55 +1,58 @@
 package io.github.wilymanhoward.reelvault.ui.home
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.wilymanhoward.reelvault.data.settings.SettingsRepository
 import io.github.wilymanhoward.reelvault.domain.link.PlatformDetector
 import io.github.wilymanhoward.reelvault.domain.link.UrlExtractor
 import io.github.wilymanhoward.reelvault.domain.link.UrlNormalizer
+import io.github.wilymanhoward.reelvault.domain.model.AppSettings
 import io.github.wilymanhoward.reelvault.domain.model.Platform
 import io.github.wilymanhoward.reelvault.domain.model.SavedItem
+import io.github.wilymanhoward.reelvault.domain.model.SortOrder
+import io.github.wilymanhoward.reelvault.domain.model.ViewMode
+import io.github.wilymanhoward.reelvault.domain.model.sortedFor
+import io.github.wilymanhoward.reelvault.domain.repository.CollectionRepository
 import io.github.wilymanhoward.reelvault.domain.repository.ItemRepository
-import io.github.wilymanhoward.reelvault.domain.repository.PreviewScheduler
 import io.github.wilymanhoward.reelvault.domain.usecase.SaveLinkUseCase
 import io.github.wilymanhoward.reelvault.domain.usecase.SaveResult
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
+import io.github.wilymanhoward.reelvault.ui.common.BatchActions
+import io.github.wilymanhoward.reelvault.ui.common.SavesEvent
+import io.github.wilymanhoward.reelvault.ui.common.SavesViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** All saves, plus saving from the paste dialog and the clipboard suggestion. */
+/** All saves (sorted as chosen), saving from the paste dialog, and the clipboard suggestion. */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val items: ItemRepository,
     private val saveLink: SaveLinkUseCase,
-    private val previews: PreviewScheduler,
-) : ViewModel() {
+    private val settingsRepository: SettingsRepository,
+    batch: BatchActions,
+    collections: CollectionRepository,
+) : SavesViewModel(batch, collections) {
 
-    val saves: StateFlow<List<SavedItem>> = items.observeItems()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val settings: StateFlow<AppSettings> = settingsRepository.settings
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AppSettings())
+
+    val saves: StateFlow<List<SavedItem>> = combine(items.observeItems(), settingsRepository.settings) { list, s ->
+        list.sortedFor(s.sortOrder)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _clipboardLink = MutableStateFlow<String?>(null)
     /** A supported, not-yet-saved link found on the clipboard. */
     val clipboardLink: StateFlow<String?> = _clipboardLink.asStateFlow()
 
-    private val _messages = Channel<String>(Channel.BUFFERED)
-    /** One-off snackbar messages. */
-    val messages: Flow<String> = _messages.receiveAsFlow()
-
     private val dismissedLinks = mutableSetOf<String>()
-    // One refresh per item per screen lifetime, so a thumbnail that stays dead can't loop refreshes.
-    private val refreshedItems = mutableSetOf<String>()
 
-    /** The card's remote thumbnail answered 403/404: re-fetch the preview for a fresh URL. */
-    fun onThumbnailGone(itemId: String) {
-        if (refreshedItems.add(itemId)) previews.schedule(itemId)
-    }
+    fun setSortOrder(order: SortOrder) = viewModelScope.launch { settingsRepository.setSortOrder(order) }
+    fun setViewMode(mode: ViewMode) = viewModelScope.launch { settingsRepository.setViewMode(mode) }
 
     fun onClipboardText(text: String) {
         viewModelScope.launch {
@@ -78,7 +81,7 @@ class HomeViewModel @Inject constructor(
                 },
                 onFailure = { "Couldn't save that link" },
             )
-            _messages.send(message)
+            send(SavesEvent.Message(message))
         }
     }
 }

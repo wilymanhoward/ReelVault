@@ -7,9 +7,11 @@ import kotlinx.serialization.Serializable
 @Serializable data object OnboardingRoute
 @Serializable data object HomeRoute
 @Serializable data object CollectionsRoute
-@Serializable data object SearchRoute
+/** @property tag start with this tag filter applied (from the Tags screen). */
+@Serializable data class SearchRoute(val tag: String? = null)
 @Serializable data object TagsRoute
 @Serializable data object SettingsRoute
+@Serializable data object TagRulesRoute
 @Serializable data class CollectionDetailRoute(val collectionId: String)
 @Serializable data class ItemDetailRoute(val itemId: String)
 @Serializable data class SharedCollectionRoute(val shareId: String)

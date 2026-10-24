@@ -5,37 +5,35 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
+import androidx.compose.material.icons.automirrored.outlined.ViewList
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.ContentPaste
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,38 +46,58 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.wilymanhoward.reelvault.domain.model.SortOrder
+import io.github.wilymanhoward.reelvault.domain.model.ViewMode
 import io.github.wilymanhoward.reelvault.ui.common.ClipboardTextEffect
-import io.github.wilymanhoward.reelvault.ui.common.PreviewCard
-import io.github.wilymanhoward.reelvault.ui.common.openVideo
+import io.github.wilymanhoward.reelvault.ui.common.SavesScreen
 import io.github.wilymanhoward.reelvault.ui.common.readClipboardText
 
-/** "All saves": a staggered grid of preview cards, newest first. Tapping a card opens the video. */
+/** "All saves": every save in a grid or list. Tapping opens the video; ⋯ opens details. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(onOpenItem: (String) -> Unit, viewModel: HomeViewModel = hiltViewModel()) {
     val saves by viewModel.saves.collectAsStateWithLifecycle()
+    val settings by viewModel.settings.collectAsStateWithLifecycle()
     val clipboardLink by viewModel.clipboardLink.collectAsStateWithLifecycle()
-    val snackbar = remember { SnackbarHostState() }
     val context = LocalContext.current
     var pasteText by rememberSaveable { mutableStateOf<String?>(null) }
 
     ClipboardTextEffect(viewModel::onClipboardText)
-    LaunchedEffect(Unit) { viewModel.messages.collect { snackbar.showSnackbar(it) } }
 
-    Scaffold(
-        contentWindowInsets = WindowInsets(0),
-        snackbarHost = { SnackbarHost(snackbar) },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { pasteText = readClipboardText(context).orEmpty() },
-                icon = { Icon(Icons.Outlined.ContentPaste, null) },
-                text = { Text("Paste link") },
+    SavesScreen(
+        viewModel = viewModel,
+        items = saves,
+        viewMode = settings.viewMode,
+        onOpenItem = onOpenItem,
+        topBar = {
+            TopAppBar(
+                title = { Text("ReelVault") },
+                actions = {
+                    var sortMenu by remember { mutableStateOf(false) }
+                    IconButton(onClick = { sortMenu = true }) { Icon(Icons.AutoMirrored.Outlined.Sort, "Sort") }
+                    DropdownMenu(expanded = sortMenu, onDismissRequest = { sortMenu = false }) {
+                        SortOrder.entries.forEach { order ->
+                            DropdownMenuItem(
+                                text = { Text(order.label) },
+                                leadingIcon = { if (order == settings.sortOrder) Icon(Icons.Filled.Check, null) },
+                                onClick = { viewModel.setSortOrder(order); sortMenu = false },
+                            )
+                        }
+                    }
+                    val list = settings.viewMode == ViewMode.LIST
+                    IconButton(onClick = { viewModel.setViewMode(if (list) ViewMode.GRID else ViewMode.LIST) }) {
+                        Icon(
+                            if (list) Icons.Outlined.GridView else Icons.AutoMirrored.Outlined.ViewList,
+                            contentDescription = if (list) "Grid view" else "List view",
+                        )
+                    }
+                },
             )
         },
-    ) { padding ->
-        // Keep showing the last link while the chip's exit animation runs.
-        var shownLink by remember { mutableStateOf<String?>(null) }
-        if (clipboardLink != null) shownLink = clipboardLink
-        Column(Modifier.padding(padding).fillMaxSize()) {
+        header = {
+            // Keep showing the last link while the chip's exit animation runs.
+            var shownLink by remember { mutableStateOf<String?>(null) }
+            if (clipboardLink != null) shownLink = clipboardLink
             AnimatedVisibility(
                 visible = clipboardLink != null,
                 enter = expandVertically() + fadeIn(),
@@ -88,33 +106,24 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                 val link = shownLink ?: return@AnimatedVisibility
                 ClipboardSuggestion(link, onSave = { viewModel.save(link) }, onDismiss = viewModel::dismissClipboardLink)
             }
-            if (saves.isEmpty()) {
-                Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
-                    Text(
-                        "Nothing saved yet.\nShare a video to ReelVault from any app, or paste a link.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            } else {
-                LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(160.dp),
-                    contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 96.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalItemSpacing = 12.dp,
-                ) {
-                    items(saves, key = { it.id }) { item ->
-                        PreviewCard(
-                            item = item,
-                            onClick = { openVideo(context, item.url, item.platform) },
-                            onThumbnailGone = { viewModel.onThumbnailGone(item.id) },
-                            modifier = Modifier.animateItem(),
-                        )
-                    }
-                }
+        },
+        emptyContent = {
+            Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
+                Text(
+                    "Nothing saved yet.\nShare a video to ReelVault from any app, or paste a link.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
-        }
-    }
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { pasteText = readClipboardText(context).orEmpty() },
+                icon = { Icon(Icons.Outlined.ContentPaste, null) },
+                text = { Text("Paste link") },
+            )
+        },
+    )
 
     pasteText?.let { initial ->
         PasteLinkDialog(

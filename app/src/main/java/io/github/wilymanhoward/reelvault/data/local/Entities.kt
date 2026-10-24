@@ -3,6 +3,7 @@ package io.github.wilymanhoward.reelvault.data.local
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Fts4
+import androidx.room.FtsOptions
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import io.github.wilymanhoward.reelvault.domain.model.Platform
@@ -17,6 +18,8 @@ import io.github.wilymanhoward.reelvault.domain.model.TagSource
  * so saving a link that was soft-deleted revives that row instead of inserting a new one.
  *
  * @property tagsText space-separated tag names, copied from [ItemTagEntity] so FTS can search them.
+ * @property imageLabels comma-separated ML Kit labels for the thumbnail, kept so auto-tags can be
+ *   recomputed offline when the rules change.
  */
 @Entity(tableName = "items", indices = [Index(value = ["normalizedUrl"], unique = true)])
 data class SavedItemEntity(
@@ -32,6 +35,7 @@ data class SavedItemEntity(
     val localThumbnailPath: String? = null,
     val notes: String = "",
     val tagsText: String = "",
+    val imageLabels: String = "",
     val previewState: PreviewState = PreviewState.PENDING,
     val isFavorite: Boolean = false,
     val isPinned: Boolean = false,
@@ -40,8 +44,12 @@ data class SavedItemEntity(
     val deleted: Boolean = false,
 )
 
-/** Full-text index over the searchable columns of [SavedItemEntity]; Room keeps it in sync with triggers. */
-@Fts4(contentEntity = SavedItemEntity::class)
+/**
+ * Full-text index over the searchable columns of [SavedItemEntity]; Room keeps it in sync with triggers.
+ * unicode61 folds case and accents beyond ASCII. It doesn't segment CJK text, so Chinese captions
+ * match by prefix of a run of characters.
+ */
+@Fts4(contentEntity = SavedItemEntity::class, tokenizer = FtsOptions.TOKENIZER_UNICODE61)
 @Entity(tableName = "items_fts")
 data class SavedItemFts(
     val title: String?,

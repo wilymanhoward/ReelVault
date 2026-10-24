@@ -11,6 +11,8 @@ import io.github.wilymanhoward.reelvault.data.remote.OEmbedApi
 import io.github.wilymanhoward.reelvault.data.remote.OkHttpShortLinkResolver
 import io.github.wilymanhoward.reelvault.data.repository.RoomCollectionRepository
 import io.github.wilymanhoward.reelvault.data.repository.RoomItemRepository
+import io.github.wilymanhoward.reelvault.data.repository.RoomTagRepository
+import io.github.wilymanhoward.reelvault.domain.repository.TagRepository
 import io.github.wilymanhoward.reelvault.domain.repository.CollectionRepository
 import io.github.wilymanhoward.reelvault.domain.repository.ItemRepository
 import io.github.wilymanhoward.reelvault.domain.repository.PreviewResolver
@@ -30,6 +32,7 @@ import javax.inject.Singleton
 abstract class DataModule {
     @Binds abstract fun itemRepository(impl: RoomItemRepository): ItemRepository
     @Binds abstract fun collectionRepository(impl: RoomCollectionRepository): CollectionRepository
+    @Binds abstract fun tagRepository(impl: RoomTagRepository): TagRepository
     @Binds abstract fun shortLinkResolver(impl: OkHttpShortLinkResolver): ShortLinkResolver
     @Binds abstract fun previewResolver(impl: NetworkPreviewResolver): PreviewResolver
     @Binds abstract fun previewScheduler(impl: WorkManagerPreviewScheduler): PreviewScheduler
