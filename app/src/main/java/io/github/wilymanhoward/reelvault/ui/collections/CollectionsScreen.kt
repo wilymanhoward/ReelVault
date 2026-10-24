@@ -1,5 +1,6 @@
 package io.github.wilymanhoward.reelvault.ui.collections
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,24 +12,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.KeyboardArrowUp
-import androidx.compose.material.icons.outlined.SwapVert
+import androidx.compose.material3.CardDefaults
+import io.github.wilymanhoward.reelvault.ui.common.VaultLargeTopAppBar as LargeTopAppBar
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextButton as TextButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -90,38 +90,32 @@ fun CollectionsScreen(onOpenCollection: (String) -> Unit, viewModel: Collections
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         topBar = {
-            TopAppBar(
+            LargeTopAppBar(
                 title = { Text("Collections") },
                 actions = {
+                    TextButton(onClick = { creating = true }) { Text("New") }
                     if (collections.size > 1) {
                         IconButton(onClick = { reordering = !reordering }) {
-                            Icon(if (reordering) Icons.Filled.Check else Icons.Outlined.SwapVert, if (reordering) "Done reordering" else "Reorder")
+                            Icon(if (reordering) VaultIcons.Check else VaultIcons.Swap, if (reordering) "Done reordering" else "Reorder")
                         }
                     }
                 },
             )
         },
-        floatingActionButton = {
-            if (!reordering) {
-                ExtendedFloatingActionButton(
-                    onClick = { creating = true },
-                    icon = { Icon(Icons.Filled.Add, null) },
-                    text = { Text("New collection") },
-                )
-            }
-        },
     ) { padding ->
         if (collections.isEmpty()) {
             EmptyState(
                 title = "No collections yet",
-                body = "Group saves by topic, trip or mood. Tap New collection to make one.",
+                body = "Recipes, places, rabbit holes. Give your saves a collection of their own.",
                 modifier = Modifier.padding(padding),
             )
         } else {
-            LazyColumn(
-                Modifier.padding(padding),
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(150.dp),
+                modifier = Modifier.padding(padding),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 itemsIndexed(collections, key = { _, c -> c.id }) { index, c ->
                     CollectionRow(
@@ -158,20 +152,26 @@ private fun CollectionRow(
     onMove: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(onClick = onClick, modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            CollectionCover(collection, Modifier.size(88.dp))
-            Column(Modifier.weight(1f).padding(horizontal = 16.dp)) {
-                Text(collection.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    Card(onClick = onClick, modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
+        Box(Modifier.fillMaxWidth().aspectRatio(3f / 4f)) {
+            CollectionCover(collection, Modifier.fillMaxSize())
+            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent, Color.Black.copy(alpha = 0.65f)))))
+            Column(Modifier.padding(14.dp)) {
+                Text(collection.name, color = Color.White, style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 Text(
                     if (collection.itemCount == 1) "1 save" else "${collection.itemCount} saves",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White.copy(alpha = 0.8f),
                 )
             }
+            if (!reordering) {
+                Icon(VaultIcons.ChevronRight, null, tint = Color.White, modifier = Modifier.align(Alignment.BottomEnd).padding(14.dp).size(22.dp))
+            }
             if (reordering) {
-                IconButton(onClick = { onMove(-1) }, enabled = canMoveUp) { Icon(Icons.Outlined.KeyboardArrowUp, "Move up") }
-                IconButton(onClick = { onMove(1) }, enabled = canMoveDown) { Icon(Icons.Outlined.KeyboardArrowDown, "Move down") }
+                Row(Modifier.align(Alignment.BottomEnd).padding(4.dp)) {
+                    IconButton(onClick = { onMove(-1) }, enabled = canMoveUp) { Icon(VaultIcons.ChevronUp, "Move up") }
+                    IconButton(onClick = { onMove(1) }, enabled = canMoveDown) { Icon(VaultIcons.ChevronDown, "Move down") }
+                }
             }
         }
     }
@@ -190,6 +190,18 @@ fun CollectionCover(collection: VaultCollection, modifier: Modifier = Modifier) 
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
+        }
+    }
+}
+
+@Composable
+fun CollectionHero(collection: VaultCollection) {
+    Box(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 16.dp).height(if (collection.coverImage == null) 156.dp else 220.dp).clip(RoundedCornerShape(24.dp))) {
+        CollectionCover(collection, Modifier.fillMaxSize())
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)))))
+        Column(Modifier.align(Alignment.BottomStart).padding(20.dp)) {
+            Text(collection.name, color = Color.White, style = MaterialTheme.typography.headlineMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(if (collection.itemCount == 1) "1 saved video" else "${collection.itemCount} saved videos", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
         }
     }
 }

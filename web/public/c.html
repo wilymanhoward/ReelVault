@@ -6,13 +6,11 @@
   <title>Shared collection · ReelVault</title>
   <meta name="description" content="A collection of short videos shared from ReelVault.">
   <meta name="robots" content="noindex">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/site.css">
   <script src="/c.js" defer></script>
 </head>
 <body>
+  <nav class="site-nav collection-nav" aria-label="Main navigation"><a class="wordmark" href="/">ReelVault</a><a href="https://github.com/wilymanhoward/ReelVault/releases">Get the app</a></nav>
   <header class="cover" id="cover">
     <div class="cover-inner">
       <p class="emoji" id="emoji" aria-hidden="true"></p>
@@ -22,7 +20,7 @@
   </header>
 
   <main>
-    <p class="notice" id="notice" hidden></p>
+    <p class="notice" id="notice" role="status" hidden></p>
     <ul class="frames" id="frames" aria-busy="true">
       <li class="frame skeleton"></li><li class="frame skeleton"></li><li class="frame skeleton"></li>
       <li class="frame skeleton"></li><li class="frame skeleton"></li><li class="frame skeleton"></li>

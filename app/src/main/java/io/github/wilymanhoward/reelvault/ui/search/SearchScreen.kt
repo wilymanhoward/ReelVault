@@ -1,8 +1,8 @@
 package io.github.wilymanhoward.reelvault.ui.search
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -17,34 +17,29 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Sell
-import androidx.compose.material3.DropdownMenu
+import io.github.wilymanhoward.reelvault.ui.common.VaultDropdownMenu as DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import io.github.wilymanhoward.reelvault.ui.common.VaultFilterChip as FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import io.github.wilymanhoward.reelvault.ui.common.VaultLargeTopAppBar as LargeTopAppBar
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -134,7 +129,6 @@ fun SearchScreen(onOpenItem: (String) -> Unit, onOpenTags: () -> Unit, viewModel
     val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
     val fieldInteraction = remember { MutableInteractionSource() }
     val focused by fieldInteraction.collectIsFocusedAsState()
-    val corner by animateDpAsState(if (focused) 16.dp else 28.dp, label = "searchCorner")
 
     SavesScreen(
         viewModel = viewModel,
@@ -144,26 +138,31 @@ fun SearchScreen(onOpenItem: (String) -> Unit, onOpenTags: () -> Unit, viewModel
         topBar = {
             // While typing, the title folds away so the search field takes over the header.
             AnimatedVisibility(visible = !focused, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
-                TopAppBar(
+                LargeTopAppBar(
                     title = { Text("Search") },
-                    actions = { IconButton(onClick = onOpenTags) { Icon(Icons.Outlined.Sell, "Tags") } },
+                    actions = { IconButton(onClick = onOpenTags) { Icon(VaultIcons.Tag, "Tags") } },
                 )
             }
         },
         header = {
             Column(Modifier.animateContentSize().then(if (focused) Modifier.statusBarsPadding() else Modifier)) {
-                OutlinedTextField(
+                TextField(
                     value = query,
                     onValueChange = viewModel::setQuery,
-                    placeholder = { Text("Titles, captions, authors, tags, notes…") },
-                    leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                    placeholder = { Text("Search your saves") },
+                    leadingIcon = { Icon(VaultIcons.Search, null) },
                     trailingIcon = {
                         AnimatedVisibility(visible = query.isNotEmpty(), enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()) {
-                            IconButton(onClick = { viewModel.setQuery("") }) { Icon(Icons.Outlined.Close, "Clear") }
+                            IconButton(onClick = { viewModel.setQuery("") }) { Icon(VaultIcons.Close, "Clear") }
                         }
                     },
                     singleLine = true,
-                    shape = RoundedCornerShape(corner),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
+                    ),
                     interactionSource = fieldInteraction,
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                 )
@@ -194,7 +193,7 @@ fun SearchScreen(onOpenItem: (String) -> Unit, onOpenTags: () -> Unit, viewModel
                             selected = selected,
                             onClick = { viewModel.togglePlatform(platform) },
                             label = { Text(platform.displayName) },
-                            leadingIcon = if (selected) ({ Icon(Icons.Filled.Check, null, Modifier.size(16.dp)) }) else null,
+                            leadingIcon = if (selected) ({ Icon(VaultIcons.Check, null, Modifier.size(16.dp)) }) else null,
                             interactionSource = interaction,
                             modifier = Modifier.animateItem().pressScale(interaction, 0.9f).animateContentSize(),
                         )
@@ -221,7 +220,7 @@ private fun PickerChip(label: String, selected: Boolean, options: List<Pair<Stri
             selected = selected,
             onClick = { if (selected) onPick(null) else open = true },
             label = { Text(label) },
-            trailingIcon = if (selected) ({ Icon(Icons.Outlined.Close, "Clear $label", Modifier.size(16.dp)) }) else null,
+            trailingIcon = if (selected) ({ Icon(VaultIcons.Close, "Clear $label", Modifier.size(16.dp)) }) else null,
         )
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             if (options.isEmpty()) DropdownMenuItem(text = { Text("None yet") }, onClick = { open = false }, enabled = false)

@@ -5,18 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ReelVault</title>
   <meta name="description" content="ReelVault keeps your saved TikToks, Reels, Shorts and more in one place on Android.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/site.css">
+  <script src="/site.js" defer></script>
 </head>
 <body>
-  <main class="landing">
-    <h1>Every saved video, one vault.</h1>
-    <p>ReelVault is an open-source Android app for the short videos you save on TikTok, Instagram, YouTube,
-      Facebook, X, Pinterest and RED. Share a video to it from any app, sort saves into collections, and send
-      a collection to friends as a link.</p>
-    <p><a href="https://github.com/wilymanhoward/ReelVault">Get ReelVault on GitHub</a></p>
+  <nav class="site-nav" aria-label="Main navigation">
+    <a class="wordmark" href="/">ReelVault</a>
+    <div><a href="#how-it-works">How it works</a><a href="https://github.com/wilymanhoward/ReelVault">GitHub</a></div>
+  </nav>
+  <main class="product-page">
+    <section class="hero" aria-labelledby="headline">
+      <div class="hero-copy">
+        <h1 id="headline">Save it.<br>Find it again.</h1>
+        <p>Your TikToks, Reels and Shorts deserve a place of their own. Keep them together in ReelVault.</p>
+        <a class="button" href="https://github.com/wilymanhoward/ReelVault/releases">Get the Android app</a>
+        <p class="availability">Open source. Yours to keep.</p>
+      </div>
+      <div class="product-preview" data-ui aria-label="Interactive collection example">
+        <div class="preview-heading"><span>ReelVault</span><span class="preview-caption">Collection example</span></div>
+        <h2>Your little library.</h2>
+        <p class="preview-intro">A place for every “save this for later”.</p>
+        <div class="segmented" role="group" aria-label="Example collections">
+          <button type="button" data-collection="weekend" aria-pressed="true">Weekend</button>
+          <button type="button" data-collection="kitchen" aria-pressed="false">Kitchen</button>
+          <button type="button" data-collection="ideas" aria-pressed="false">Ideas</button>
+        </div>
+        <div class="collection-demo" aria-live="polite">
+          <div class="collection-symbol" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M12 20a5 5 0 0 1 5-5h12l6 6h12a5 5 0 0 1 5 5v20a5 5 0 0 1-5 5H17a5 5 0 0 1-5-5Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="m29 30 10 6-10 6Z" fill="currentColor"/></svg></div>
+          <h3 id="demo-title">The weekend list</h3>
+          <p id="demo-description">The hike someone sent you. That tiny bookshop. A day worth getting out for.</p>
+          <span class="demo-note">Your collection starts with a shared link.</span>
+        </div>
+        <div class="preview-bottom"><span>Saved in one place</span><span>Ready when you are</span></div>
+      </div>
+    </section>
+    <section class="workflow" id="how-it-works" aria-labelledby="workflow-title">
+      <div><h2 id="workflow-title">Less searching.<br>More watching.</h2><p>Keep the link, add a little order, and come back when you have a moment.</p></div>
+      <div class="workflow-list">
+        <article><h3>Share it to ReelVault</h3><p>Use Share in your favorite app, or paste a video link straight into your library.</p></article>
+        <article><h3>Make room for your interests</h3><p>Put recipes, places and rabbit holes into collections. Add tags and notes to find them again.</p></article>
+        <article><h3>Pass the collection along</h3><p>With sync set up, send a collection as a link. Friends can browse it on the web.</p></article>
+      </div>
+    </section>
+    <section class="closing" aria-labelledby="closing-title"><h2 id="closing-title">Your saves. Your space.</h2><p>TikTok, Instagram, YouTube, Facebook, X, Pinterest, RED, and the rest of the web.</p><a class="text-link" href="https://github.com/wilymanhoward/ReelVault">Take a look at the source</a></section>
   </main>
+  <footer class="site-footer"><a class="wordmark" href="/">ReelVault</a><p>A home for the videos you want to come back to.</p><a href="https://github.com/wilymanhoward/ReelVault">Built in the open</a></footer>
 </body>
 </html>

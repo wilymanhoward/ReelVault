@@ -18,5 +18,5 @@ val Platform.style: PlatformStyle
         Platform.X -> PlatformStyle(listOf(Color(0xFF3A3F47), Color(0xFF0E0F11)), "X", 1f)
         Platform.PINTEREST -> PlatformStyle(listOf(Color(0xFFFF3B5C), Color(0xFFA3001A)), "P", 2f / 3f)
         Platform.XIAOHONGSHU -> PlatformStyle(listOf(Color(0xFFFF6A80), Color(0xFFE0102F)), "RED", 3f / 4f)
-        Platform.OTHER -> PlatformStyle(listOf(Ultraviolet, Coral), "↗", 1f)
+        Platform.OTHER -> PlatformStyle(listOf(Accent, Coral), "↗", 1f)
     }

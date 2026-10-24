@@ -1,20 +1,17 @@
 package io.github.wilymanhoward.reelvault.ui.common
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.DriveFileMove
-import androidx.compose.material.icons.outlined.Sell
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultIconButton as IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
+import io.github.wilymanhoward.reelvault.ui.common.VaultSnackbarHost as SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -162,9 +159,9 @@ fun SavesScreen(
             if (selected.isEmpty()) topBar()
             else SelectionTopBar(selected.size, onClear = clear) {
                 extraSelectionActions(selected, clear)
-                IconButton(onClick = { dialog = BatchDialog.COLLECTION }) { Icon(Icons.Outlined.DriveFileMove, "Add to collection") }
-                IconButton(onClick = { dialog = BatchDialog.TAG }) { Icon(Icons.Outlined.Sell, "Tag") }
-                IconButton(onClick = { viewModel.delete(selected); clear() }) { Icon(Icons.Outlined.Delete, "Delete") }
+                IconButton(onClick = { dialog = BatchDialog.COLLECTION }) { Icon(VaultIcons.Move, "Add to collection") }
+                IconButton(onClick = { dialog = BatchDialog.TAG }) { Icon(VaultIcons.Tag, "Tag") }
+                IconButton(onClick = { viewModel.delete(selected); clear() }) { Icon(VaultIcons.Trash, "Delete") }
             }
         },
         floatingActionButton = { if (selected.isEmpty()) floatingActionButton() },

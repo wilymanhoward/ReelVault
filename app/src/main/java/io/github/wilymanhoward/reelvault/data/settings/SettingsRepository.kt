@@ -24,7 +24,7 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { prefs ->
         AppSettings(
-            themeMode = prefs.enum(THEME_MODE, ThemeMode.SYSTEM),
+            themeMode = prefs.enum(THEME_MODE, ThemeMode.DARK),
             dynamicColor = prefs[DYNAMIC_COLOR] ?: false,
             imageLabeling = prefs[IMAGE_LABELING] ?: true,
             sortOrder = prefs.enum(SORT_ORDER, SortOrder.NEWEST),

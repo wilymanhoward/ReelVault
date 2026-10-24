@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
             val settings by viewModel.settings.collectAsStateWithLifecycle()
             val shareId by pendingShareId.collectAsStateWithLifecycle()
             val loaded = settings ?: return@setContent
-            ReelVaultTheme(themeMode = loaded.themeMode, dynamicColor = loaded.dynamicColor) {
+            ReelVaultTheme(themeMode = loaded.themeMode) {
                 AppShell(
                     onboardingDone = loaded.onboardingDone,
                     onFinishOnboarding = { viewModel.finishOnboarding() },

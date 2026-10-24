@@ -1,5 +1,6 @@
 package io.github.wilymanhoward.reelvault.ui.item
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -13,32 +14,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.PushPin
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.PushPin
-import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.outlined.StarOutline
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
+import io.github.wilymanhoward.reelvault.ui.common.VaultAssistChip as AssistChip
+import io.github.wilymanhoward.reelvault.ui.common.VaultButton as Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import io.github.wilymanhoward.reelvault.ui.common.VaultFilterChip as FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.InputChip
+import io.github.wilymanhoward.reelvault.ui.common.VaultIconButton as IconButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultInputChip as InputChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextField as OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextButton as TextButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -164,13 +152,13 @@ fun ItemDetailScreen(onBack: () -> Unit, viewModel: ItemDetailViewModel = hiltVi
                 actions = {
                     val current = item ?: return@TopAppBar
                     IconButton(onClick = { viewModel.toggleFavorite() }) {
-                        Icon(if (current.isFavorite) Icons.Filled.Star else Icons.Outlined.StarOutline, if (current.isFavorite) "Unfavorite" else "Favorite")
+                        Icon(if (current.isFavorite) VaultIcons.Star else VaultIcons.Star, if (current.isFavorite) "Unfavorite" else "Favorite")
                     }
                     IconButton(onClick = { viewModel.togglePinned() }) {
-                        Icon(if (current.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin, if (current.isPinned) "Unpin" else "Pin")
+                        Icon(if (current.isPinned) VaultIcons.Pin else VaultIcons.Pin, if (current.isPinned) "Unpin" else "Pin")
                     }
-                    IconButton(onClick = { shareVideo(context, current.url, current.platform) }) { Icon(Icons.Outlined.Share, "Share") }
-                    IconButton(onClick = { dialog = DetailDialog.DELETE }) { Icon(Icons.Outlined.Delete, "Delete") }
+                    IconButton(onClick = { shareVideo(context, current.url, current.platform) }) { Icon(VaultIcons.Share, "Share") }
+                    IconButton(onClick = { dialog = DetailDialog.DELETE }) { Icon(VaultIcons.Trash, "Delete") }
                 },
             )
         },
@@ -198,8 +186,8 @@ fun ItemDetailScreen(onBack: () -> Unit, viewModel: ItemDetailViewModel = hiltVi
                 Text(displayUrl(current.url), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Button(onClick = { openVideo(context, current.url, current.platform) }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.AutoMirrored.Outlined.OpenInNew, null, Modifier.size(18.dp))
-                Text("  Open in ${current.platform.displayName}")
+                Icon(VaultIcons.External, null, Modifier.size(18.dp))
+                Text("Open in ${current.platform.displayName}", Modifier.padding(start = 8.dp))
             }
 
             OutlinedTextField(
@@ -218,22 +206,22 @@ fun ItemDetailScreen(onBack: () -> Unit, viewModel: ItemDetailViewModel = hiltVi
                             AssistChip(
                                 onClick = { viewModel.removeTag(tag.name) },
                                 label = { Text(tag.name) },
-                                leadingIcon = { Icon(Icons.Outlined.AutoAwesome, "Auto tag", Modifier.size(16.dp)) },
-                                trailingIcon = { Icon(Icons.Outlined.Close, "Remove ${tag.name}", Modifier.size(16.dp)) },
+                                leadingIcon = { Icon(VaultIcons.AutoTag, "Auto tag", Modifier.size(16.dp)) },
+                                trailingIcon = { Icon(VaultIcons.Close, "Remove ${tag.name}", Modifier.size(16.dp)) },
                             )
                         } else {
                             InputChip(
                                 selected = true,
                                 onClick = { viewModel.removeTag(tag.name) },
                                 label = { Text(tag.name) },
-                                trailingIcon = { Icon(Icons.Outlined.Close, "Remove ${tag.name}", Modifier.size(16.dp)) },
+                                trailingIcon = { Icon(VaultIcons.Close, "Remove ${tag.name}", Modifier.size(16.dp)) },
                             )
                         }
                     }
                     AssistChip(
                         onClick = { dialog = DetailDialog.TAG },
                         label = { Text("Add tag") },
-                        leadingIcon = { Icon(Icons.Filled.Add, null, Modifier.size(16.dp)) },
+                        leadingIcon = { Icon(VaultIcons.Plus, null, Modifier.size(16.dp)) },
                     )
                 }
             }
@@ -246,20 +234,20 @@ fun ItemDetailScreen(onBack: () -> Unit, viewModel: ItemDetailViewModel = hiltVi
                             selected = selected,
                             onClick = { viewModel.toggleCollection(c.id) },
                             label = { Text(listOfNotNull(c.emoji, c.name).joinToString(" ")) },
-                            leadingIcon = if (selected) ({ Icon(Icons.Filled.Check, null, Modifier.size(16.dp)) }) else null,
+                            leadingIcon = if (selected) ({ Icon(VaultIcons.Check, null, Modifier.size(16.dp)) }) else null,
                         )
                     }
                     AssistChip(
                         onClick = { dialog = DetailDialog.COLLECTION },
                         label = { Text("New") },
-                        leadingIcon = { Icon(Icons.Filled.Add, null, Modifier.size(16.dp)) },
+                        leadingIcon = { Icon(VaultIcons.Plus, null, Modifier.size(16.dp)) },
                     )
                 }
             }
 
             TextButton(onClick = { viewModel.refreshPreview() }) {
-                Icon(Icons.Outlined.Refresh, null, Modifier.size(18.dp))
-                Text("  Refresh preview")
+                Icon(VaultIcons.Refresh, null, Modifier.size(18.dp))
+                Text("Refresh preview", Modifier.padding(start = 8.dp))
             }
         }
     }

@@ -27,7 +27,7 @@ class ShareActivity : ComponentActivity() {
         setContent {
             val settings by mainViewModel.settings.collectAsStateWithLifecycle()
             val loaded = settings ?: AppSettings()
-            ReelVaultTheme(themeMode = loaded.themeMode, dynamicColor = loaded.dynamicColor) {
+            ReelVaultTheme(themeMode = loaded.themeMode) {
                 QuickSaveSheet(onClose = ::finish)
             }
         }

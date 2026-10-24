@@ -1,5 +1,6 @@
 package io.github.wilymanhoward.reelvault.ui.quicksave
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,19 +17,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.LinkOff
-import androidx.compose.material3.Button
+import io.github.wilymanhoward.reelvault.ui.common.VaultButton as Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import io.github.wilymanhoward.reelvault.ui.common.VaultFilterChip as FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextField as OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -100,13 +96,13 @@ fun QuickSaveSheet(onClose: () -> Unit, viewModel: QuickSaveViewModel = hiltView
                         onDone = close,
                     )
                     QuickSaveState.NoLink -> Problem(
-                        icon = { Icon(Icons.Outlined.LinkOff, null, Modifier.size(40.dp)) },
+                        icon = { Icon(VaultIcons.LinkOff, null, Modifier.size(40.dp)) },
                         title = "No link found",
                         body = "ReelVault saves video links. What you shared didn't contain one.",
                         onClose = close,
                     )
                     QuickSaveState.Failed -> Problem(
-                        icon = { Icon(Icons.Outlined.Info, null, Modifier.size(40.dp)) },
+                        icon = { Icon(VaultIcons.Info, null, Modifier.size(40.dp)) },
                         title = "Couldn't save",
                         body = "Something went wrong while saving. Try sharing again.",
                         onClose = close,
@@ -131,7 +127,7 @@ private fun DoneContent(
 ) {
     val colors = MaterialTheme.colorScheme
     if (alreadySaved) {
-        Icon(Icons.Outlined.Info, null, Modifier.size(48.dp), tint = colors.secondary)
+        Icon(VaultIcons.Info, null, Modifier.size(48.dp), tint = colors.secondary)
     } else {
         AnimatedCheck(color = colors.primary, checkColor = colors.onPrimary, burstColor = colors.tertiary)
     }
@@ -158,14 +154,14 @@ private fun DoneContent(
                 selected = selected,
                 onClick = { onInteract(); onToggle(c.id) },
                 label = { Text(listOfNotNull(c.emoji, c.name).joinToString(" ")) },
-                leadingIcon = if (selected) ({ Icon(Icons.Filled.Check, null, Modifier.size(18.dp)) }) else null,
+                leadingIcon = if (selected) ({ Icon(VaultIcons.Check, null, Modifier.size(18.dp)) }) else null,
             )
         }
         FilterChip(
             selected = false,
             onClick = { onInteract(); creating = true },
             label = { Text("New") },
-            leadingIcon = { Icon(Icons.Filled.Add, null, Modifier.size(18.dp)) },
+            leadingIcon = { Icon(VaultIcons.Plus, null, Modifier.size(18.dp)) },
         )
     }
     if (creating) {
