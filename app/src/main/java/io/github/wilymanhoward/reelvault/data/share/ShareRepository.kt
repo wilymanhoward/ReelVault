@@ -8,6 +8,7 @@ import io.github.wilymanhoward.reelvault.data.local.ReelVaultDatabase
 import io.github.wilymanhoward.reelvault.domain.model.Platform
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.tasks.await
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.security.SecureRandom
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,6 +31,19 @@ data class SharedCollection(
     val colorArgb: Long?,
     val items: List<SharedItem>,
 )
+
+private val SHARE_ID = Regex("^[A-Za-z0-9]{6,40}$")
+
+/**
+ * The share id in a collection link like `https://<host>/c/<id>`, or null when [url] isn't one.
+ * Only the given [host] counts, so look-alike domains can't route into the app.
+ */
+fun shareIdFromLink(url: String, host: String): String? {
+    val u = url.toHttpUrlOrNull() ?: return null
+    if (u.scheme != "https" || u.host != host) return null
+    val segments = u.pathSegments.filter { it.isNotEmpty() }
+    return segments.takeIf { it.size == 2 && it[0] == "c" }?.get(1)?.takeIf(SHARE_ID::matches)
+}
 
 /** Thrown when sharing needs an account (anonymous is enough) and nobody is signed in. */
 class NotSignedInException : IllegalStateException("Sign in (or turn on sync) in Settings to share collections")
