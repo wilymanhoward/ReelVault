@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.wilymanhoward.reelvault",
+      "sha256_cert_fingerprints": [
+        "BF:F6:82:66:AE:0A:3A:1E:B9:7E:ED:7F:02:7B:28:23:08:47:29:B4:49:D3:BC:9B:71:AF:46:F0:CF:3D:D5:BE"
+      ]
+    }
+  }
+]

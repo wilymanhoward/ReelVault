@@ -41,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.network.HttpException
+import androidx.compose.ui.graphics.graphicsLayer
+import io.github.wilymanhoward.reelvault.domain.model.Platform
 import io.github.wilymanhoward.reelvault.domain.model.PreviewState
 import io.github.wilymanhoward.reelvault.domain.model.SavedItem
 import io.github.wilymanhoward.reelvault.ui.theme.style
@@ -63,7 +65,13 @@ class SaveActions(
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PreviewCard(item: SavedItem, selected: Boolean, actions: SaveActions, modifier: Modifier = Modifier) {
+fun PreviewCard(
+    item: SavedItem,
+    selected: Boolean,
+    actions: SaveActions,
+    modifier: Modifier = Modifier,
+    showDetails: Boolean = true,
+) {
     val text = item.title ?: item.caption
     val shape = RoundedCornerShape(20.dp)
     Card(
@@ -87,16 +95,18 @@ fun PreviewCard(item: SavedItem, selected: Boolean, actions: SaveActions, modifi
             }
             PlatformBadge(item, Modifier.align(Alignment.TopStart).padding(10.dp))
             StatusIcons(item, Modifier.align(Alignment.TopEnd).padding(top = 6.dp, end = 40.dp))
-            IconButton(
-                onClick = { actions.onDetails(item) },
-                modifier = Modifier.align(Alignment.TopEnd).padding(2.dp),
-            ) {
-                Icon(
-                    Icons.Outlined.MoreHoriz,
-                    contentDescription = "Details",
-                    tint = Color.White,
-                    modifier = Modifier.background(Color.Black.copy(alpha = 0.35f), CircleShape).padding(4.dp),
-                )
+            if (showDetails) {
+                IconButton(
+                    onClick = { actions.onDetails(item) },
+                    modifier = Modifier.align(Alignment.TopEnd).padding(2.dp),
+                ) {
+                    Icon(
+                        Icons.Outlined.MoreHoriz,
+                        contentDescription = "Details",
+                        tint = Color.White,
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.35f), CircleShape).padding(4.dp),
+                    )
+                }
             }
             if (selected) {
                 Icon(
@@ -138,7 +148,10 @@ fun Thumbnail(
                 model = model,
                 contentDescription = item.title ?: item.caption,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
+                // YouTube's hqdefault.jpg is 4:3 with black bars baked in above and below; zoom past them.
+                modifier = Modifier.fillMaxSize().then(
+                    if (item.platform == Platform.YOUTUBE) Modifier.graphicsLayer { scaleX = 1.34f; scaleY = 1.34f } else Modifier,
+                ),
                 onSuccess = { state = ImageState.SHOWN },
                 onError = { error ->
                     state = ImageState.FAILED

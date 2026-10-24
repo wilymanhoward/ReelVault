@@ -15,6 +15,13 @@ if (file("google-services.json").exists()) {
     apply(plugin = libs.plugins.google.services.get().pluginId)
 }
 
+// Share links live on Firebase Hosting at https://<project-id>.web.app/c/<id>; the project id comes from
+// google-services.json so forks get their own domain. Without a config the placeholder host never matches.
+val shareHost: String = file("google-services.json").takeIf { it.exists() }?.let { json ->
+    val info = (groovy.json.JsonSlurper().parse(json) as Map<*, *>)["project_info"] as Map<*, *>
+    "${info["project_id"]}.web.app"
+} ?: "share.invalid"
+
 // Personal settings that must not be committed (local.properties is gitignored).
 val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
@@ -33,7 +40,9 @@ android {
 
         // Optional Meta app token ("appId|clientToken") for Instagram/Facebook oEmbed.
         // Empty = Open Graph scraping only.
-        buildConfigField("String", "META_OEMBED_TOKEN", "\"${localProperties.getProperty("meta.oembedToken", "").trim()}\"")
+        buildConfigField("String", "SHARE_HOST", "\"$shareHost\"")
+        manifestPlaceholders["shareHost"] = shareHost
+        buildConfigField("String", "META_OEMBED_TOKEN","\"${localProperties.getProperty("meta.oembedToken", "").trim()}\"")
     }
 
     buildTypes {
