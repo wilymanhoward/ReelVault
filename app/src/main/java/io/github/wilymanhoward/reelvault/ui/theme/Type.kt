@@ -7,39 +7,70 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import io.github.wilymanhoward.reelvault.R
 
-// Bricolage Grotesque (variable, OFL; see licenses/) for titles only. Body text stays in the system
-// face so captions in any script render well.
+// Apple-native type on Android. SF Pro and New York can't ship outside Apple platforms, so:
+// Inter (closest open match to SF Pro) carries all interface text, and Source Serif 4 (in the role
+// of New York) sets the large titles, keeping the album feel of the Once reference.
+// Sizes follow iOS Dynamic Type at its default size (pt ≈ sp), so system font scaling still applies.
+// Both are variable fonts (OFL, see licenses/); the optical size axis is matched to each style.
+
 @OptIn(ExperimentalTextApi::class)
-private fun bricolage(weight: Int, opticalSize: Float) = Font(
-    R.font.bricolage_grotesque,
-    weight = FontWeight(weight),
-    variationSettings = FontVariation.Settings(FontVariation.weight(weight), FontVariation.Setting("opsz", opticalSize)),
+private fun inter(weight: Int, size: Float) = FontFamily(
+    Font(
+        R.font.inter,
+        weight = FontWeight(weight),
+        variationSettings = FontVariation.Settings(FontVariation.weight(weight), FontVariation.Setting("opsz", size.coerceIn(14f, 32f))),
+    ),
 )
 
-private val Display = FontFamily(bricolage(800, 72f))
-private val Headline = FontFamily(bricolage(700, 36f))
-private val Title = FontFamily(bricolage(600, 18f))
+@OptIn(ExperimentalTextApi::class)
+private fun serif(weight: Int, size: Float) = FontFamily(
+    Font(
+        R.font.source_serif_4,
+        weight = FontWeight(weight),
+        variationSettings = FontVariation.Settings(FontVariation.weight(weight), FontVariation.Setting("opsz", size.coerceIn(8f, 60f))),
+    ),
+)
 
-private val base = Typography()
+/** A serif title style: [size]/[height] in sp, tracked slightly tight as large serif titles want. */
+private fun title(size: Int, height: Int, weight: Int = 600) = TextStyle(
+    fontFamily = serif(weight, size.toFloat()),
+    fontWeight = FontWeight(weight),
+    fontSize = size.sp,
+    lineHeight = height.sp,
+    letterSpacing = (-0.01 * size).sp,
+)
+
+/** An Inter style. [tracking] mirrors SF Pro's size-specific tracking: tighter at body sizes, open at captions. */
+private fun text(size: Int, height: Int, weight: Int = 400, tracking: Double) = TextStyle(
+    fontFamily = inter(weight, size.toFloat()),
+    fontWeight = FontWeight(weight),
+    fontSize = size.sp,
+    lineHeight = height.sp,
+    letterSpacing = tracking.sp,
+)
 
 internal val ReelVaultTypography = Typography(
-    displayLarge = base.displayLarge.copy(fontFamily = Display, letterSpacing = (-0.03).em),
-    displayMedium = base.displayMedium.copy(fontFamily = Display, letterSpacing = (-0.03).em),
-    displaySmall = base.displaySmall.copy(fontFamily = Display, letterSpacing = (-0.02).em),
-    headlineLarge = TextStyle(fontFamily = Display, fontSize = 34.sp, lineHeight = 36.sp, letterSpacing = (-0.025).em),
-    headlineMedium = TextStyle(fontFamily = Headline, fontSize = 28.sp, lineHeight = 32.sp, letterSpacing = (-0.02).em),
-    headlineSmall = TextStyle(fontFamily = Headline, fontSize = 24.sp, lineHeight = 28.sp, letterSpacing = (-0.015).em),
-    titleLarge = TextStyle(fontFamily = Title, fontSize = 22.sp, lineHeight = 26.sp, letterSpacing = (-0.01).em),
-    titleMedium = TextStyle(fontFamily = Title, fontSize = 17.sp, lineHeight = 22.sp),
-    titleSmall = TextStyle(fontFamily = Title, fontSize = 15.sp, lineHeight = 20.sp),
-    bodyLarge = base.bodyLarge,
-    bodyMedium = base.bodyMedium,
-    bodySmall = base.bodySmall,
-    labelLarge = base.labelLarge,
-    labelMedium = base.labelMedium,
-    labelSmall = base.labelSmall,
+    // Onboarding and hero moments.
+    displayLarge = title(52, 56, 600),
+    displayMedium = title(44, 48, 600),
+    displaySmall = title(38, 42, 600),
+    // iOS Large Title (screen titles), Title 1, Title 2.
+    headlineLarge = title(34, 41, 600),
+    headlineMedium = title(28, 34, 600),
+    headlineSmall = title(22, 28, 600),
+    // iOS Title 3, Headline, Subheadline (semibold).
+    titleLarge = text(20, 25, 600, tracking = -0.2),
+    titleMedium = text(17, 22, 600, tracking = -0.3),
+    titleSmall = text(15, 20, 600, tracking = -0.15),
+    // iOS Body, Subheadline, Footnote.
+    bodyLarge = text(17, 22, tracking = -0.3),
+    bodyMedium = text(15, 20, tracking = -0.15),
+    bodySmall = text(13, 18, tracking = -0.05),
+    // Buttons (17 semibold like iOS), section headers and metadata, tab labels.
+    labelLarge = text(17, 22, 600, tracking = -0.3),
+    labelMedium = text(13, 18, 500, tracking = -0.05),
+    labelSmall = text(11, 13, 500, tracking = 0.05),
 )

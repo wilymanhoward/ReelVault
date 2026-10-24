@@ -1,24 +1,15 @@
 package io.github.wilymanhoward.reelvault.ui.collections
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.outlined.RemoveCircleOutline
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import io.github.wilymanhoward.reelvault.ui.common.VaultAlertDialog as AlertDialog
+import io.github.wilymanhoward.reelvault.ui.common.VaultButton as Button
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.TextButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultOutlinedButton as OutlinedButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextButton as TextButton
 import androidx.compose.ui.platform.LocalContext
 import io.github.wilymanhoward.reelvault.data.share.NotSignedInException
 import io.github.wilymanhoward.reelvault.data.share.ShareRepository
@@ -28,16 +19,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import io.github.wilymanhoward.reelvault.ui.common.VaultTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -161,16 +151,17 @@ fun CollectionDetailScreen(
         topBar = {
             TopAppBar(
                 navigationIcon = { BackButton(onBack) },
-                title = { Text(listOfNotNull(collection?.emoji, collection?.name).joinToString(" ")) },
+                title = { Text("Collection", style = MaterialTheme.typography.bodyMedium) },
                 actions = {
                     IconButton(onClick = viewModel::publishShare) {
-                        Icon(if (collection?.shareId != null) Icons.Outlined.Link else Icons.Outlined.Share, "Share collection")
+                        Icon(if (collection?.shareId != null) VaultIcons.Link else VaultIcons.Share, "Share collection")
                     }
-                    IconButton(onClick = { editing = true }) { Icon(Icons.Outlined.Edit, "Edit collection") }
-                    IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Outlined.Delete, "Delete collection") }
+                    IconButton(onClick = { editing = true }) { Icon(VaultIcons.Edit, "Edit collection") }
+                    IconButton(onClick = { confirmDelete = true }) { Icon(VaultIcons.Trash, "Delete collection") }
                 },
             )
         },
+        header = { collection?.let { CollectionHero(it) } },
         emptyContent = {
             EmptyState(
                 title = "Nothing in here yet",
@@ -179,10 +170,10 @@ fun CollectionDetailScreen(
         },
         extraSelectionActions = { selected, clear ->
             if (selected.size == 1) {
-                IconButton(onClick = { viewModel.setCover(selected.first()); clear() }) { Icon(Icons.Outlined.Image, "Set as cover") }
+                IconButton(onClick = { viewModel.setCover(selected.first()); clear() }) { Icon(VaultIcons.Image, "Set as cover") }
             }
             IconButton(onClick = { viewModel.removeFromCollection(selected); clear() }) {
-                Icon(Icons.Outlined.RemoveCircleOutline, "Remove from collection")
+                Icon(VaultIcons.MinusCircle, "Remove from collection")
             }
         },
     )
@@ -204,7 +195,7 @@ fun CollectionDetailScreen(
                     Text(s.link, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = { copyText(context, "ReelVault link", s.link) }) { Text("Copy link") }
-                        Button(onClick = { shareText(context, "${collection?.name.orEmpty()} — a ReelVault collection\n${s.link}") }) { Text("Share link") }
+                        Button(onClick = { shareText(context, "${collection?.name.orEmpty()}, a ReelVault collection\n${s.link}") }) { Text("Share link") }
                     }
                 }
             },

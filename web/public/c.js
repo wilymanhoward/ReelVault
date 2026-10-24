@@ -95,7 +95,7 @@
     a.setAttribute("aria-label", (text ? text + ", " : "") + "on " + platform.name);
 
     var shot = el("div", item.platform === "YOUTUBE" ? "shot youtube" : "shot");
-    shot.style.background = "linear-gradient(150deg, " + platform.colors.join(", ") + ")";
+    shot.style.background = platform.colors[platform.colors.length - 1];
     shot.appendChild(el("span", "mark", platform.mark));
     var thumb = item.thumbnailUrl && safeHttpUrl(item.thumbnailUrl);
     if (thumb) {

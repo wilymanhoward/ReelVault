@@ -1,4 +1,4 @@
 <resources>
-    <color name="window_background">#FFF3F4F8</color>
-    <color name="brand_ultraviolet">#FF5B3DF5</color>
+    <color name="window_background">#FF101010</color>
+    <color name="brand_ultraviolet">#FF101010</color>
 </resources>

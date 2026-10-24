@@ -1,5 +1,6 @@
 package io.github.wilymanhoward.reelvault.ui.common
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -27,12 +28,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultIconButton as IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -61,7 +58,7 @@ fun SavesList(
     actions: SaveActions,
     onDelete: (SavedItem) -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 96.dp),
+    contentPadding: PaddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 32.dp),
 ) {
     // Swiping is off while selecting, so a stray swipe can't delete during a batch action.
     val swipeEnabled = selected.isEmpty()
@@ -74,11 +71,11 @@ fun SavesList(
     AnimatedContent(targetState = viewMode, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "viewMode") { mode ->
         when (mode) {
             ViewMode.GRID -> LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Adaptive(160.dp),
+                columns = StaggeredGridCells.Adaptive(144.dp),
                 modifier = modifier,
                 contentPadding = contentPadding,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalItemSpacing = 12.dp,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalItemSpacing = 16.dp,
             ) {
                 itemsIndexed(items, key = { _, item -> item.id }) { index, item ->
                     SwipeToDelete(
@@ -123,7 +120,7 @@ private fun SwipeToDelete(enabled: Boolean, onDelete: () -> Unit, modifier: Modi
                 Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.errorContainer).padding(20.dp),
                 contentAlignment = Alignment.CenterEnd,
             ) {
-                Icon(Icons.Outlined.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.onErrorContainer)
+                Icon(VaultIcons.Trash, contentDescription = "Delete", tint = MaterialTheme.colorScheme.onErrorContainer)
             }
         },
         content = { content() },
@@ -136,19 +133,19 @@ private fun SaveRow(item: SavedItem, selected: Boolean, actions: SaveActions) {
     ListItem(
         modifier = Modifier.combinedClickable(onClick = { actions.onClick(item) }, onLongClick = { actions.onLongClick(item) }),
         colors = ListItemDefaults.colors(
-            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.background,
         ),
         leadingContent = {
             Box(Modifier.size(56.dp).sharedAcrossScreens(thumbnailKey(item.id)).clip(RoundedCornerShape(12.dp))) {
                 Thumbnail(item, Modifier.fillMaxSize(), onGone = { actions.onThumbnailGone(item) })
-                if (selected) Icon(Icons.Filled.CheckCircle, "Selected", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.align(Alignment.Center))
+                if (selected) Icon(VaultIcons.CheckCircle, "Selected", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.align(Alignment.Center))
             }
         },
         overlineContent = { Text(item.platform.displayName) },
         headlineContent = { Text(item.title ?: item.caption ?: displayUrl(item.url), maxLines = 2, overflow = TextOverflow.Ellipsis) },
         supportingContent = item.authorName?.let { { Text(it, maxLines = 1) } },
         trailingContent = {
-            IconButton(onClick = { actions.onDetails(item) }) { Icon(Icons.Outlined.MoreHoriz, contentDescription = "Details") }
+            IconButton(onClick = { actions.onDetails(item) }) { Icon(VaultIcons.More, contentDescription = "Details") }
         },
     )
 }

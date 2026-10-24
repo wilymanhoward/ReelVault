@@ -148,6 +148,6 @@ pull request; please run `./gradlew testDebugUnitTest` before opening one.
 
 ## License
 
-[MIT](LICENSE). The Bricolage Grotesque typeface is under the
-[SIL Open Font License 1.1](licenses/OFL-BricolageGrotesque.txt).
+[MIT](LICENSE). The app's typefaces, [Inter](licenses/Inter-OFL.txt) and
+[Source Serif 4](licenses/SourceSerif4-OFL.txt), are under the SIL Open Font License 1.1.
 ReelVault isn't affiliated with any of the platforms it saves links from.

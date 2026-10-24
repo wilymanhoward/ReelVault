@@ -10,11 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ListItem
+import io.github.wilymanhoward.reelvault.ui.common.VaultListItem as ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import io.github.wilymanhoward.reelvault.ui.common.VaultTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import io.github.wilymanhoward.reelvault.BuildConfig
 import io.github.wilymanhoward.reelvault.domain.model.Platform
 import io.github.wilymanhoward.reelvault.ui.common.BackButton
-import io.github.wilymanhoward.reelvault.ui.common.VaultDial
+import io.github.wilymanhoward.reelvault.ui.common.VaultMark
 import io.github.wilymanhoward.reelvault.ui.common.openVideo
 
 private const val REPO_URL = "https://github.com/wilymanhoward/ReelVault"
@@ -39,8 +39,8 @@ private val credits = listOf(
     Credit("jsoup", "MIT", "https://jsoup.org"),
     Credit("Firebase Android SDK", "Apache 2.0", "https://github.com/firebase/firebase-android-sdk"),
     Credit("ML Kit image labeling", "ML Kit Terms of Service", "https://developers.google.com/ml-kit/terms"),
-    Credit("Bricolage Grotesque typeface", "SIL Open Font License 1.1", "https://github.com/ateliertriay/bricolage"),
-    Credit("Material Symbols icons", "Apache 2.0", "https://fonts.google.com/icons"),
+    Credit("Inter typeface", "SIL Open Font License 1.1", "https://github.com/rsms/inter"),
+    Credit("Source Serif 4 typeface", "SIL Open Font License 1.1", "https://github.com/adobe-fonts/source-serif"),
 )
 
 /** Version, source link and open-source licenses. */
@@ -60,7 +60,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    VaultDial(size = 88.dp)
+                    VaultMark(size = 88.dp)
                     Text("ReelVault", style = MaterialTheme.typography.headlineLarge)
                     Text("Version ${BuildConfig.VERSION_NAME}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(

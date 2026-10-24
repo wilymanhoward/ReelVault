@@ -2,30 +2,21 @@ package io.github.wilymanhoward.reelvault.ui.settings
 
 import android.content.Context
 import android.text.format.DateUtils
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.CloudOff
-import androidx.compose.material.icons.outlined.Sync
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.Role
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -36,6 +27,12 @@ import io.github.wilymanhoward.reelvault.data.sync.AccountRepository
 import io.github.wilymanhoward.reelvault.data.sync.AccountState
 import io.github.wilymanhoward.reelvault.data.sync.SyncScheduler
 import io.github.wilymanhoward.reelvault.data.sync.SyncStateStore
+import io.github.wilymanhoward.reelvault.ui.common.GroupFooter
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
+import io.github.wilymanhoward.reelvault.ui.common.VaultListItem
+import io.github.wilymanhoward.reelvault.ui.common.VaultSeparator
+import io.github.wilymanhoward.reelvault.ui.common.VaultAlertDialog as AlertDialog
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextButton as TextButton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -82,7 +79,14 @@ class AccountViewModel @Inject constructor(
     }
 }
 
-/** Sign-in and sync controls at the top of Settings. */
+/** "Just now" for the last minute, then "5 minutes ago", "Yesterday" and so on. */
+private fun syncedLabel(at: Long?, now: Long = System.currentTimeMillis()): String = when {
+    at == null -> "Not synced yet"
+    now - at < DateUtils.MINUTE_IN_MILLIS -> "Just now"
+    else -> DateUtils.getRelativeTimeSpanString(at, now, DateUtils.MINUTE_IN_MILLIS).toString()
+}
+
+/** Sign-in and sync, as the first grouped section of Settings. */
 @Composable
 fun AccountSection(viewModel: AccountViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -92,62 +96,54 @@ fun AccountSection(viewModel: AccountViewModel = hiltViewModel()) {
     val context = LocalContext.current
     var confirmSignOut by rememberSaveable { mutableStateOf(false) }
 
-    SectionTitle("Account & sync")
+    SectionTitle("Account and sync")
     when (val s = state) {
         null -> Unit
-        AccountState.NotConfigured -> ListItem(
-            leadingContent = { Icon(Icons.Outlined.CloudOff, null) },
-            headlineContent = { Text("Sync isn't set up in this build") },
-            supportingContent = { Text("Everything works offline. Add a Firebase config to enable sign-in, sync and sharing (see README).") },
-        )
-        AccountState.SignedOut -> Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(
-                "Your saves live on this device. Sign in to back them up, sync between devices and share collections.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            if (viewModel.googleAvailable) {
-                Button(onClick = { viewModel.signInWithGoogle(context) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-                    Text("Sign in with Google")
-                }
-            }
-            OutlinedButton(onClick = viewModel::continueAnonymously, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-                Text("Sync without an account")
+        AccountState.NotConfigured -> {
+            SettingsGroup {
+                VaultListItem(
+                    leadingContent = { Icon(VaultIcons.CloudOff, null) },
+                    headlineContent = { Text("Sync is off in this copy") },
+                    supportingContent = {
+                        Text("This build of ReelVault was made without a Firebase project, so sign-in, sync and sharing aren't available. Everything else works on this device.")
+                    },
+                )
             }
         }
-        is AccountState.SignedIn -> Column {
-            ListItem(
-                leadingContent = { Icon(Icons.Outlined.AccountCircle, null) },
-                headlineContent = { Text(if (s.isAnonymous) "Anonymous account" else s.name ?: s.email ?: "Signed in") },
-                supportingContent = {
-                    Text(
-                        listOfNotNull(
-                            s.email.takeUnless { s.isAnonymous },
-                            lastSynced?.let { "Synced ${DateUtils.getRelativeTimeSpanString(it)}" } ?: "Not synced yet",
-                        ).joinToString(" · "),
-                    )
-                },
-                trailingContent = {
-                    TextButton(onClick = viewModel::syncNow) {
-                        Icon(Icons.Outlined.Sync, null)
-                        Text(" Sync now")
-                    }
-                },
-            )
-            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        AccountState.SignedOut -> {
+            SettingsGroup {
+                if (viewModel.googleAvailable) {
+                    ActionRow("Sign in with Google", enabled = !busy) { viewModel.signInWithGoogle(context) }
+                    VaultSeparator()
+                }
+                ActionRow("Sync without an account", enabled = !busy, onClick = viewModel::continueAnonymously)
+            }
+            GroupFooter("Your saves live on this device. Sign in to back them up, sync between devices and share collections.")
+        }
+        is AccountState.SignedIn -> {
+            SettingsGroup {
+                VaultListItem(
+                    leadingContent = { Icon(VaultIcons.User, null) },
+                    headlineContent = { Text(if (s.isAnonymous) "Anonymous account" else s.name ?: s.email ?: "Signed in") },
+                    // The address gets a line of its own, so it never breaks mid-word beside an action.
+                    supportingContent = s.email.takeUnless { s.isAnonymous }?.let { { Text(it) } },
+                )
+                VaultSeparator()
+                VaultListItem(
+                    modifier = Modifier.clickable(role = Role.Button, onClick = viewModel::syncNow),
+                    leadingContent = { Icon(VaultIcons.Sync, null) },
+                    headlineContent = { Text("Sync now") },
+                    trailingContent = { Text(syncedLabel(lastSynced), style = MaterialTheme.typography.bodyMedium) },
+                )
                 if (s.isAnonymous && viewModel.googleAvailable) {
-                    Text(
-                        "Link a Google account to keep your saves if you lose this phone.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Button(onClick = { viewModel.signInWithGoogle(context) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-                        Text("Upgrade to Google account")
-                    }
+                    VaultSeparator()
+                    ActionRow("Upgrade to Google account", enabled = !busy) { viewModel.signInWithGoogle(context) }
                 }
-                OutlinedButton(onClick = { confirmSignOut = true }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-                    Text("Sign out")
-                }
+                VaultSeparator()
+                ActionRow("Sign out", enabled = !busy, color = MaterialTheme.colorScheme.error) { confirmSignOut = true }
+            }
+            if (s.isAnonymous && viewModel.googleAvailable) {
+                GroupFooter("Link a Google account to keep your saves if you lose this phone.")
             }
             if (confirmSignOut) {
                 SignOutDialog(
@@ -159,8 +155,22 @@ fun AccountSection(viewModel: AccountViewModel = hiltViewModel()) {
         }
     }
     error?.let {
-        Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(16.dp))
+        Text(
+            it,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(start = 32.dp, end = 32.dp, top = 8.dp),
+        )
     }
+}
+
+/** A tappable row whose title is the action, like iOS settings buttons. */
+@Composable
+private fun ActionRow(title: String, enabled: Boolean, color: Color = MaterialTheme.colorScheme.primary, onClick: () -> Unit) {
+    VaultListItem(
+        modifier = Modifier.clickable(enabled = enabled, role = Role.Button, onClick = onClick),
+        headlineContent = { Text(title, color = if (enabled) color else color.copy(alpha = 0.4f)) },
+    )
 }
 
 @Composable

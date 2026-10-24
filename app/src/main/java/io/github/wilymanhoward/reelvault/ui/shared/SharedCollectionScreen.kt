@@ -1,5 +1,6 @@
 package io.github.wilymanhoward.reelvault.ui.shared
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,19 +16,17 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.LibraryAdd
-import androidx.compose.material3.Button
+import io.github.wilymanhoward.reelvault.ui.common.VaultButton as Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
+import io.github.wilymanhoward.reelvault.ui.common.VaultSnackbarHost as SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextButton as TextButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -201,7 +200,7 @@ private fun Header(state: SharedState.Loaded, onAdd: () -> Unit) {
         )
         Button(onClick = onAdd, enabled = !state.adding && !state.added) {
             if (state.adding) CircularProgressIndicator(Modifier.size(18.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
-            else Icon(Icons.Outlined.LibraryAdd, null)
+            else Icon(VaultIcons.Import, null)
             Text(if (state.added) "  In your vault" else "  Add to my vault")
         }
     }

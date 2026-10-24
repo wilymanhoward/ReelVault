@@ -1,38 +1,32 @@
 package io.github.wilymanhoward.reelvault.ui.tags
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
+import io.github.wilymanhoward.reelvault.ui.common.VaultAlertDialog as AlertDialog
+import io.github.wilymanhoward.reelvault.ui.common.VaultDropdownMenu as DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultExtendedFloatingActionButton as ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
+import io.github.wilymanhoward.reelvault.ui.common.VaultIconButton as IconButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultListItem as ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextField as OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
+import io.github.wilymanhoward.reelvault.ui.common.VaultSnackbarHost as SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
+import io.github.wilymanhoward.reelvault.ui.common.VaultSwitch as Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextButton as TextButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -104,10 +97,10 @@ fun TagsScreen(onBack: () -> Unit, onTagClick: (String) -> Unit, viewModel: Tags
                     supportingContent = { Text(if (tag.count == 1) "1 save" else "${tag.count} saves") },
                     trailingContent = {
                         Box {
-                            IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, "More for ${tag.name}") }
+                            IconButton(onClick = { menu = true }) { Icon(VaultIcons.MoreVertical, "More for ${tag.name}") }
                             DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                                DropdownMenuItem(text = { Text("Rename") }, leadingIcon = { Icon(Icons.Outlined.Edit, null) }, onClick = { renaming = tag.name; menu = false })
-                                DropdownMenuItem(text = { Text("Delete") }, leadingIcon = { Icon(Icons.Outlined.Delete, null) }, onClick = { deleting = tag.name; menu = false })
+                                DropdownMenuItem(text = { Text("Rename") }, leadingIcon = { Icon(VaultIcons.Edit, null) }, onClick = { renaming = tag.name; menu = false })
+                                DropdownMenuItem(text = { Text("Delete") }, leadingIcon = { Icon(VaultIcons.Trash, null) }, onClick = { deleting = tag.name; menu = false })
                             }
                         }
                     },
@@ -160,9 +153,9 @@ fun TagRulesScreen(onBack: () -> Unit, viewModel: TagsViewModel = hiltViewModel(
                             viewModel.reapply()
                             snackbar.showSnackbar("Rules re-applied to all saves")
                         }
-                    }) { Icon(Icons.Outlined.Refresh, "Re-apply to all saves") }
+                    }) { Icon(VaultIcons.Refresh, "Re-apply to all saves") }
                     Box {
-                        IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, "More") }
+                        IconButton(onClick = { menu = true }) { Icon(VaultIcons.MoreVertical, "More") }
                         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                             DropdownMenuItem(text = { Text("Reset to defaults") }, onClick = { confirmReset = true; menu = false })
                         }
@@ -173,7 +166,7 @@ fun TagRulesScreen(onBack: () -> Unit, viewModel: TagsViewModel = hiltViewModel(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { editing = TagRule(category = "", keywords = emptyList()) },
-                icon = { Icon(Icons.Filled.Add, null) },
+                icon = { Icon(VaultIcons.Plus, null) },
                 text = { Text("New rule") },
             )
         },

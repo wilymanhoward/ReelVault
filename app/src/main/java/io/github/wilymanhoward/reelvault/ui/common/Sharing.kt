@@ -16,7 +16,7 @@ fun shareText(context: Context, text: String, title: String? = null) {
 /** Shares a single save: its original video link with a short note. */
 fun shareVideo(context: Context, url: String, platform: Platform) {
     val where = if (platform == Platform.OTHER) "" else " on ${platform.displayName}"
-    shareText(context, "Saw this$where — via ReelVault\n$url")
+    shareText(context, "Saw this$where, via ReelVault\n$url")
 }
 
 /** Copies [text] to the clipboard. Android 13+ shows its own confirmation. */

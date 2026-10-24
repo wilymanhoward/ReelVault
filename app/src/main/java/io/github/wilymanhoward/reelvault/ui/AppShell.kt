@@ -1,38 +1,35 @@
 package io.github.wilymanhoward.reelvault.ui
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Surface
+import io.github.wilymanhoward.reelvault.ui.common.VaultTab
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Collections
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Collections
-import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.unit.dp
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -69,13 +66,13 @@ import io.github.wilymanhoward.reelvault.ui.shared.SharedCollectionScreen
 import io.github.wilymanhoward.reelvault.ui.tags.TagRulesScreen
 import io.github.wilymanhoward.reelvault.ui.tags.TagsScreen
 
-private data class TopLevelDestination(val route: Any, val label: String, val icon: ImageVector, val selectedIcon: ImageVector)
+private data class TopLevelDestination(val route: Any, val label: String, val icon: ImageVector)
 
 private val topLevelDestinations = listOf(
-    TopLevelDestination(HomeRoute, "Saves", Icons.Outlined.GridView, Icons.Filled.GridView),
-    TopLevelDestination(CollectionsRoute, "Collections", Icons.Outlined.Collections, Icons.Filled.Collections),
-    TopLevelDestination(SearchRoute(), "Search", Icons.Outlined.Search, Icons.Filled.Search),
-    TopLevelDestination(SettingsRoute, "Settings", Icons.Outlined.Settings, Icons.Filled.Settings),
+    TopLevelDestination(HomeRoute, "Library", VaultIcons.Library),
+    TopLevelDestination(CollectionsRoute, "Collections", VaultIcons.Collections),
+    TopLevelDestination(SearchRoute(), "Search", VaultIcons.Search),
+    TopLevelDestination(SettingsRoute, "Settings", VaultIcons.Settings),
 )
 
 /**
@@ -115,32 +112,30 @@ fun AppShell(
                 enter = slideInVertically { it } + fadeIn(),
                 exit = slideOutVertically { it } + fadeOut(),
             ) {
-                NavigationBar {
-                    topLevelDestinations.forEach { dest ->
-                        val selected = currentDestination?.hierarchy?.any { it.hasRoute(dest.route::class) } == true
-                        val scale by animateFloatAsState(
-                            if (selected) 1.15f else 1f,
-                            spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
-                            label = "tabScale",
-                        )
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = {
-                                navController.navigate(dest.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = {
-                                Icon(
-                                    if (selected) dest.selectedIcon else dest.icon,
-                                    contentDescription = null,
-                                    modifier = Modifier.graphicsLayer { scaleX = scale; scaleY = scale },
+                Box(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 10.dp)) {
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
+                    ) {
+                        Row(Modifier.fillMaxWidth().padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            topLevelDestinations.forEach { dest ->
+                                val selected = currentDestination?.hierarchy?.any { it.hasRoute(dest.route::class) } == true
+                                VaultTab(
+                                    selected = selected,
+                                    onClick = {
+                                        navController.navigate(dest.route) {
+                                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    },
+                                    icon = { Icon(dest.icon, contentDescription = null, modifier = Modifier.size(22.dp)) },
+                                    label = dest.label,
+                                    modifier = Modifier.weight(1f),
                                 )
-                            },
-                            label = { Text(dest.label) },
-                        )
+                            }
+                        }
                     }
                 }
             }

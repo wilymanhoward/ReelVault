@@ -1,5 +1,6 @@
 package io.github.wilymanhoward.reelvault.ui.common
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,20 +17,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
+import io.github.wilymanhoward.reelvault.ui.common.VaultAlertDialog as AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
+import io.github.wilymanhoward.reelvault.ui.common.VaultIconButton as IconButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultListItem as ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextField as OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextButton as TextButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultTopAppBar as TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -47,16 +44,15 @@ import io.github.wilymanhoward.reelvault.domain.model.VaultCollection
 fun SelectionTopBar(count: Int, onClear: () -> Unit, actions: @Composable RowScope.() -> Unit) {
     TopAppBar(
         title = { Text("$count selected") },
-        navigationIcon = { IconButton(onClick = onClear) { Icon(Icons.Filled.Close, contentDescription = "Clear selection") } },
+        navigationIcon = { IconButton(onClick = onClear) { Icon(VaultIcons.Close, contentDescription = "Clear selection") } },
         actions = actions,
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
     )
 }
 
 /** Back arrow for detail screens' top bars. */
 @Composable
 fun BackButton(onBack: () -> Unit) {
-    IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") }
+    IconButton(onClick = onBack) { Icon(VaultIcons.ChevronLeft, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary) }
 }
 
 /** Pick a collection (or make a new one) to move items into. */

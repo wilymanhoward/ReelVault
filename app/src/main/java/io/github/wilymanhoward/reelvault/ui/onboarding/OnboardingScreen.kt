@@ -25,10 +25,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import io.github.wilymanhoward.reelvault.ui.common.VaultButton as Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultTextButton as TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,7 +48,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.dp
 import io.github.wilymanhoward.reelvault.domain.model.Platform
-import io.github.wilymanhoward.reelvault.ui.common.VaultDial
+import io.github.wilymanhoward.reelvault.ui.common.VaultMark
 import io.github.wilymanhoward.reelvault.ui.theme.LocalReducedMotion
 import io.github.wilymanhoward.reelvault.ui.theme.style
 import kotlinx.coroutines.launch
@@ -140,14 +140,14 @@ private fun rememberEntrance(active: Boolean, durationMillis: Int = 900): Animat
 private fun ShareSheetArt(active: Boolean) {
     val p = rememberEntrance(active, 1_100)
     val colors = MaterialTheme.colorScheme
-    val apps = listOf(Color(0xFF4CB782), Color(0xFF3B8BFF), Color(0xFFF2A93B))
+    val apps = listOf(colors.outline, colors.onSurfaceVariant, colors.secondary)
     Box(contentAlignment = Alignment.Center) {
         // Clipped to the phone's shape so the sliding sheet never pokes out below it.
         Canvas(Modifier.size(width = 170.dp, height = 270.dp).clip(RoundedCornerShape(28.dp))) {
             val phone = CornerRadius(28.dp.toPx())
             drawRoundRect(colors.outlineVariant, cornerRadius = phone)
             // The video playing behind the sheet.
-            drawRoundRect(Brush.verticalGradient(Platform.TIKTOK.style.colors), Offset(10.dp.toPx(), 10.dp.toPx()), Size(size.width - 20.dp.toPx(), size.height - 20.dp.toPx()), CornerRadius(20.dp.toPx()))
+            drawRoundRect(Brush.verticalGradient(listOf(colors.surfaceContainerHigh, colors.surfaceContainerHigh)), Offset(10.dp.toPx(), 10.dp.toPx()), Size(size.width - 20.dp.toPx(), size.height - 20.dp.toPx()), CornerRadius(20.dp.toPx()))
             val sheetHeight = size.height * 0.42f
             val slide = (1f - easeOut(p.value.coerceIn(0f, 0.6f) / 0.6f)) * sheetHeight
             translate(top = size.height - sheetHeight + slide) {
@@ -183,7 +183,7 @@ private fun GridArt(active: Boolean) {
             val x = (i % cols) * (w + gap)
             val y = (i / cols) * (h + gap) + (size.height - (h * 2 + gap)) / 2
             translate(x, y + drop) {
-                drawCard(platform.style.colors, Size(w, h), alpha = local)
+                drawCard(listOf(Color(0xFF22252A), Color(0xFF22252A)), Size(w, h), alpha = local)
             }
         }
     }
@@ -203,16 +203,14 @@ private fun CollectArt(active: Boolean) {
                 val angle = (i - 1) * (8f + 22f * spread)
                 val dx = (i - 1) * size.width * 0.25f * spread
                 translate(size.width / 2 - w / 2 + dx, size.height / 2 - h / 2) {
-                    rotate(angle, pivot = Offset(w / 2, h)) { drawCard(platform.style.colors, Size(w, h)) }
+                    rotate(angle, pivot = Offset(w / 2, h)) { drawCard(listOf(Color(0xFF22252A), Color(0xFF22252A)), Size(w, h)) }
                 }
             }
         }
         val appear = ((p.value - 0.65f) / 0.35f).coerceIn(0f, 1f)
-        VaultDial(
+        VaultMark(
             size = 72.dp,
-            ringColor = Color.White,
-            playColor = MaterialTheme.colorScheme.tertiary,
-            animate = false,
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(top = 8.dp).then(Modifier.size(72.dp * appear.coerceAtLeast(0.01f))),
         )
     }

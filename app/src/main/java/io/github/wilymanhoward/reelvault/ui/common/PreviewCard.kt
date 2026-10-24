@@ -1,5 +1,6 @@
 package io.github.wilymanhoward.reelvault.ui.common
 
+import io.github.wilymanhoward.reelvault.ui.common.VaultIcons
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -9,7 +10,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.material3.ripple
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -21,18 +21,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.PushPin
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import io.github.wilymanhoward.reelvault.ui.common.VaultIconButton as IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -72,8 +68,8 @@ class SaveActions(
 )
 
 /**
- * A saved item as a grid card: thumbnail with a gradient scrim, platform badge, title and author.
- * Without a usable image it shows the platform's gradient art instead, never a broken image.
+ * A saved item as a grid card: thumbnail with a separate title, platform and author.
+ * Without a usable image it shows the platform monogram instead, never a broken image.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -85,7 +81,7 @@ fun PreviewCard(
     showDetails: Boolean = true,
 ) {
     val text = item.title ?: item.caption
-    val shape = RoundedCornerShape(20.dp)
+    val shape = RoundedCornerShape(16.dp)
     val interaction = remember { MutableInteractionSource() }
     val haptics = LocalHapticFeedback.current
     val borderWidth by animateDpAsState(if (selected) 3.dp else 0.dp, label = "selectionBorder")
@@ -97,7 +93,7 @@ fun PreviewCard(
             .then(if (borderWidth > 0.dp) Modifier.border(borderWidth, MaterialTheme.colorScheme.primary, shape) else Modifier)
             .combinedClickable(
                 interactionSource = interaction,
-                indication = ripple(),
+                indication = null,
                 onClick = {
                     haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
                     actions.onClick(item)
@@ -105,39 +101,30 @@ fun PreviewCard(
                 onLongClick = { actions.onLongClick(item) },
             ),
         shape = shape,
+        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
     ) {
-        Box(Modifier.fillMaxWidth().aspectRatio(item.platform.style.aspectRatio)) {
+        Box(Modifier.fillMaxWidth().aspectRatio(3f / 4f).clip(RoundedCornerShape(16.dp))) {
             Thumbnail(
                 item,
                 Modifier.fillMaxSize().sharedAcrossScreens(thumbnailKey(item.id)),
                 onGone = { actions.onThumbnailGone(item) },
-            ) { shown ->
-                if (shown) {
-                    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.45f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f))))
-                    Column(Modifier.align(Alignment.BottomStart).padding(12.dp)) {
-                        text?.let { Text(it, color = Color.White, style = MaterialTheme.typography.titleSmall, maxLines = 3, overflow = TextOverflow.Ellipsis) }
-                        item.authorName?.let { Text(it, color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.labelMedium, maxLines = 1) }
-                    }
-                } else {
-                    FallbackText(item, Modifier.align(Alignment.BottomStart))
-                }
-            }
-            PlatformBadge(item, Modifier.align(Alignment.TopStart).padding(10.dp))
-            StatusIcons(item, Modifier.align(Alignment.TopEnd).padding(top = 6.dp, end = 40.dp))
+            )
+            StatusIcons(item, Modifier.align(Alignment.TopStart).padding(10.dp))
             if (showDetails) {
-                IconButton(
-                    onClick = { actions.onDetails(item) },
-                    modifier = Modifier.align(Alignment.TopEnd).padding(2.dp),
-                ) {
-                    Icon(
-                        Icons.Outlined.MoreHoriz,
-                        contentDescription = "Details",
-                        tint = Color.White,
-                        modifier = Modifier.background(Color.Black.copy(alpha = 0.35f), CircleShape).padding(4.dp),
-                    )
+                IconButton(onClick = { actions.onDetails(item) }, modifier = Modifier.align(Alignment.TopEnd)) {
+                    Icon(VaultIcons.More, "Details", tint = Color.White,
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.65f), CircleShape).padding(4.dp))
                 }
             }
             SelectedMark(selected, Modifier.align(Alignment.Center))
+        }
+        Column(Modifier.padding(horizontal = 4.dp, vertical = 10.dp)) {
+            Text(text ?: displayUrl(item.url), style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(
+                listOfNotNull(item.platform.displayName, item.authorName).joinToString(" · "),
+                style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -151,11 +138,12 @@ private fun SelectedMark(selected: Boolean, modifier: Modifier = Modifier) {
         exit = scaleOut() + fadeOut(),
         modifier = modifier,
     ) {
+        // Mark on the action color, so it reads in both themes (17.6:1 dark, 15.7:1 light).
         Icon(
-            Icons.Filled.CheckCircle,
+            VaultIcons.Check,
             contentDescription = "Selected",
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(48.dp).background(Color.White, CircleShape),
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.size(44.dp).background(MaterialTheme.colorScheme.primary, CircleShape).padding(10.dp),
         )
     }
 }
@@ -214,48 +202,45 @@ fun PlatformBadge(item: SavedItem, modifier: Modifier = Modifier) {
         fontWeight = FontWeight.SemiBold,
         modifier = modifier
             .clip(RoundedCornerShape(50))
-            .background(Brush.horizontalGradient(item.platform.style.colors))
+            .background(Color.Black.copy(alpha = 0.7f))
             .padding(horizontal = 8.dp, vertical = 3.dp),
     )
 }
 
+/**
+ * Pin and favorite marks over the thumbnail. White on a dark disc so they hold 4.5:1 or better over
+ * any photo (worst case, a white image, still leaves #666 behind the glyph); shape, not color, tells them apart.
+ */
 @Composable
-private fun StatusIcons(item: SavedItem, modifier: Modifier = Modifier, size: Dp = 18.dp) {
-    Box(modifier) {
-        when {
-            item.isPinned -> Icon(Icons.Filled.PushPin, "Pinned", tint = Color.White, modifier = Modifier.size(size))
-            item.isFavorite -> Icon(Icons.Filled.Star, "Favorite", tint = Color(0xFFFFC94D), modifier = Modifier.size(size))
+private fun StatusIcons(item: SavedItem, modifier: Modifier = Modifier, size: Dp = 16.dp) {
+    val marks = listOfNotNull(
+        (VaultIcons.Pin to "Pinned").takeIf { item.isPinned },
+        (VaultIcons.Star to "Favorite").takeIf { item.isFavorite },
+    )
+    if (marks.isEmpty()) return
+    Row(modifier, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        marks.forEach { (icon, label) ->
+            Icon(
+                icon,
+                contentDescription = label,
+                tint = Color.White,
+                modifier = Modifier.background(Color.Black.copy(alpha = 0.6f), CircleShape).padding(6.dp).size(size),
+            )
         }
     }
 }
 
-/** Platform gradient and monogram, for items without a usable thumbnail. */
+/** Neutral surface and platform monogram, for items without a usable thumbnail. */
 @Composable
 private fun FallbackArt(item: SavedItem) {
     val style = item.platform.style
-    Box(Modifier.fillMaxSize().background(Brush.linearGradient(style.colors))) {
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
         Text(
             style.monogram,
-            color = Color.White.copy(alpha = 0.9f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 40.sp,
             fontWeight = FontWeight.Black,
             modifier = Modifier.align(Alignment.Center),
-        )
-    }
-}
-
-@Composable
-private fun FallbackText(item: SavedItem, modifier: Modifier = Modifier) {
-    Column(modifier.padding(12.dp)) {
-        (item.title ?: item.caption)?.let {
-            Text(it, color = Color.White, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-        }
-        Text(
-            displayUrl(item.url),
-            color = Color.White.copy(alpha = 0.75f),
-            style = MaterialTheme.typography.labelSmall,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
         )
     }
 }

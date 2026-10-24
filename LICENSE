@@ -20,5 +20,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-The Bricolage Grotesque typeface in app/src/main/res/font is licensed separately
-under the SIL Open Font License 1.1; see licenses/OFL-BricolageGrotesque.txt.
+The Inter and Source Serif 4 typefaces in app/src/main/res/font are licensed separately
+under the SIL Open Font License 1.1; see licenses/Inter-OFL.txt and licenses/SourceSerif4-OFL.txt.
