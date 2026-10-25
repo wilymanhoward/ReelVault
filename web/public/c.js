@@ -4,7 +4,7 @@
 (function () {
   "use strict";
 
-  // Same gradients and monograms as the app (PlatformStyle.kt), for frames without a usable image.
+  // Platform names and monograms for frames without a usable image.
   var PLATFORMS = {
     TIKTOK: { name: "TikTok", mark: "TT", colors: ["#25F4EE", "#111111", "#FE2C55"] },
     INSTAGRAM: { name: "Instagram", mark: "IG", colors: ["#F58529", "#DD2A7B", "#8134AF"] },
@@ -15,7 +15,7 @@
     XIAOHONGSHU: { name: "RED", mark: "RED", colors: ["#FF6A80", "#E0102F"] },
     OTHER: { name: "Web", mark: "↗", colors: ["#E8475F", "#6B5CE7"] }
   };
-  var DEFAULT_COLOR = "#E8475F";
+  var DEFAULT_COLOR = "#66635F";
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -95,7 +95,7 @@
     a.setAttribute("aria-label", (text ? text + ", " : "") + "on " + platform.name);
 
     var shot = el("div", item.platform === "YOUTUBE" ? "shot youtube" : "shot");
-    shot.style.background = platform.colors[platform.colors.length - 1];
+    shot.style.background = "var(--well)";
     shot.appendChild(el("span", "mark", platform.mark));
     var thumb = item.thumbnailUrl && safeHttpUrl(item.thumbnailUrl);
     if (thumb) {

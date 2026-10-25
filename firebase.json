@@ -4,6 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
+    "site": "getreelvault",
     "public": "web/public",
     "ignore": ["firebase.json", "**/node_modules/**"],
     "cleanUrls": true,
@@ -22,7 +23,7 @@
           { "key": "X-Content-Type-Options", "value": "nosniff" },
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src https: data:; connect-src 'self' https://firestore.googleapis.com; frame-ancestors 'none'; base-uri 'none'"
+            "value": "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' https: data:; connect-src 'self' https://firestore.googleapis.com; frame-ancestors 'none'; base-uri 'none'"
           }
         ]
       }
