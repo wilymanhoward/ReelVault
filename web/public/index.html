@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ReelVault</title>
   <meta name="description" content="ReelVault keeps your saved TikToks, Reels, Shorts and more in one place on Android.">
+  <meta name="theme-color" content="#101010">
+  <link rel="icon" href="/assets/reelvault-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/site.css">
   <script src="/site.js" defer></script>
 </head>
 <body>
   <nav class="site-nav" aria-label="Main navigation">
-    <a class="wordmark" href="/">ReelVault</a>
+    <a class="wordmark" href="/"><img src="/assets/reelvault-icon.svg" width="32" height="32" alt="">ReelVault</a>
     <div><a href="#how-it-works">How it works</a><a href="https://github.com/wilymanhoward/ReelVault">GitHub</a></div>
   </nav>
   <main class="product-page">
@@ -22,21 +24,21 @@
         <p class="availability">Open source. Yours to keep.</p>
       </div>
       <div class="product-preview" data-ui aria-label="Interactive collection example">
-        <div class="preview-heading"><span>ReelVault</span><span class="preview-caption">Collection example</span></div>
-        <h2>Your little library.</h2>
-        <p class="preview-intro">A place for every “save this for later”.</p>
+        <div class="preview-heading"><img src="/assets/reelvault-icon.svg" width="32" height="32" alt=""><span class="preview-caption">Collection example</span></div>
+        <h2>Collections</h2>
+        <p class="preview-intro">Your interests, with a little room to grow.</p>
         <div class="segmented" role="group" aria-label="Example collections">
           <button type="button" data-collection="weekend" aria-pressed="true">Weekend</button>
           <button type="button" data-collection="kitchen" aria-pressed="false">Kitchen</button>
           <button type="button" data-collection="ideas" aria-pressed="false">Ideas</button>
         </div>
         <div class="collection-demo" aria-live="polite">
-          <div class="collection-symbol" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><path d="M12 20a5 5 0 0 1 5-5h12l6 6h12a5 5 0 0 1 5 5v20a5 5 0 0 1-5 5H17a5 5 0 0 1-5-5Z" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="m29 30 10 6-10 6Z" fill="currentColor"/></svg></div>
+          <div class="collection-symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3H20V22L14 18L8 22ZM11 8V14L16 11Z M3 5H5V21H3Z" fill="currentColor" fill-rule="evenodd"/></svg></div>
           <h3 id="demo-title">The weekend list</h3>
           <p id="demo-description">The hike someone sent you. That tiny bookshop. A day worth getting out for.</p>
           <span class="demo-note">Your collection starts with a shared link.</span>
         </div>
-        <div class="preview-bottom"><span>Saved in one place</span><span>Ready when you are</span></div>
+        <div class="preview-bottom"><span>Pick a collection to preview it</span></div>
       </div>
     </section>
     <section class="workflow" id="how-it-works" aria-labelledby="workflow-title">
